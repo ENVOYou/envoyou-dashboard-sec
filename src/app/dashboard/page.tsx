@@ -154,23 +154,26 @@ export default function DashboardPage() {
             Quick Actions
           </h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-              <span className="mr-2">🧮</span>
-              New Calculation
-            </button>
-            <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-              <span className="mr-2">📄</span>
-              Generate Report
-            </button>
-            <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-              <span className="mr-2">🏢</span>
-              Add Entity
-            </button>
-            <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-              <span className="mr-2">📊</span>
-              View Analytics
-            </button>
-          </div>
+          <a
+            href="/dashboard/emissions"
+            className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+          >
+            <span className="mr-2">🧮</span>
+            New Calculation
+          </a>
+          <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+            <span className="mr-2">📄</span>
+            Generate Report
+          </button>
+          <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+            <span className="mr-2">🏢</span>
+            Add Entity
+          </button>
+          <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+            <span className="mr-2">📊</span>
+            View Analytics
+          </button>
+        </div>
         </div>
       </div>
     </div>

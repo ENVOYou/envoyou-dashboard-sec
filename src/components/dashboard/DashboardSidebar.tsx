@@ -6,11 +6,11 @@ import { useAuthStore } from '../../stores/auth-store';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: '📊' },
-  { name: 'Emissions', href: '/dashboard/emissions', icon: '🌱' },
-  { name: 'Entities', href: '/dashboard/entities', icon: '🏢' },
+  { name: 'Emissions Calculator', href: '/dashboard/emissions', icon: '🧮' },
+  { name: 'Company Entities', href: '/dashboard/entities', icon: '🏢' },
   { name: 'Reports', href: '/dashboard/reports', icon: '📄' },
-  { name: 'Calculations', href: '/dashboard/calculations', icon: '🧮' },
-  { name: 'Audit Trail', href: '/dashboard/audit', icon: '📋' },
+  { name: 'Calculation History', href: '/dashboard/calculations', icon: '📋' },
+  { name: 'Audit Trail', href: '/dashboard/audit', icon: '🔍' },
   { name: 'Settings', href: '/dashboard/settings', icon: '⚙️' },
 ];
 
