@@ -148,7 +148,7 @@ export interface AuditLog {
   user_id?: string;
   company_id?: string;
   entity_id?: string;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   ip_address?: string;
   user_agent?: string;
   created_at: string;

@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
-import { useAuthStore } from '@/stores/auth-store';
 import { EmissionCalculation } from '@/types/api';
 
 interface Scope1Data {
@@ -36,7 +35,6 @@ interface Scope2Data {
 }
 
 export default function EmissionsPage() {
-  const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'scope1' | 'scope2'>('scope1');
 
@@ -74,10 +72,10 @@ export default function EmissionsPage() {
   // Mutations
   const scope1Mutation = useMutation({
     mutationFn: (data: Scope1Data) => apiClient.calculateScope1(data),
-    onSuccess: (result: any) => {
+    onSuccess: (result: EmissionCalculation) => {
       queryClient.invalidateQueries({ queryKey: ['emissions-summary'] });
       queryClient.invalidateQueries({ queryKey: ['recent-calculations'] });
-      alert(`Scope 1 calculation completed! Total CO2e: ${(result as any).total_co2e?.toFixed(2)} tCO2e`);
+      alert(`Scope 1 calculation completed! Total CO2e: ${result.total_co2e?.toFixed(2)} tCO2e`);
       // Reset form
       setScope1Data({
         calculation_name: '',
@@ -93,17 +91,17 @@ export default function EmissionsPage() {
         }]
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       alert(`Calculation failed: ${error.message}`);
     },
   });
 
   const scope2Mutation = useMutation({
     mutationFn: (data: Scope2Data) => apiClient.calculateScope2(data),
-    onSuccess: (result: any) => {
+    onSuccess: (result: EmissionCalculation) => {
       queryClient.invalidateQueries({ queryKey: ['emissions-summary'] });
       queryClient.invalidateQueries({ queryKey: ['recent-calculations'] });
-      alert(`Scope 2 calculation completed! Total CO2e: ${(result as any).total_co2e?.toFixed(2)} tCO2e`);
+      alert(`Scope 2 calculation completed! Total CO2e: ${result.total_co2e?.toFixed(2)} tCO2e`);
       // Reset form
       setScope2Data({
         calculation_name: '',
@@ -120,7 +118,7 @@ export default function EmissionsPage() {
         calculation_method: 'location_based'
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       alert(`Calculation failed: ${error.message}`);
     },
   });

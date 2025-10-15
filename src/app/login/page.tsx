@@ -7,27 +7,27 @@ import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
 import { useAuthStore } from '@/stores/auth-store';
 import { useRecaptcha } from '@/hooks/useRecaptcha';
+import { AuthResponse, LoginRequest } from '@/types/api';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
-  const [recaptchaToken, setRecaptchaToken] = useState<string>('');
 
   const router = useRouter();
   const { login } = useAuthStore();
   const { executeRecaptcha, isLoaded: recaptchaLoaded } = useRecaptcha();
 
   const loginMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: LoginRequest) => {
       return await apiClient.login(data);
     },
-    onSuccess: (data) => {
+    onSuccess: (data: AuthResponse) => {
       login(data.user, data.access_token);
       router.push('/dashboard');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       alert(error.message || 'Login failed. Please check your credentials.');
     },
   });
@@ -135,7 +135,7 @@ export default function LoginPage() {
             <div>
               <button
                 type="submit"
-                disabled={loginMutation.isPending || !recaptchaLoaded}
+                disabled={loginMutation.isPending}
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loginMutation.isPending ? 'Signing in...' : 'Sign in'}

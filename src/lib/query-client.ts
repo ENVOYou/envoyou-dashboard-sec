@@ -4,7 +4,7 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: (failureCount, error: any) => {
+      retry: (failureCount, error: Error | null) => {
         // Don't retry on 4xx errors (client errors)
         if (error?.message?.includes('HTTP 4')) return false;
         // Don't retry on auth errors

@@ -1,4 +1,85 @@
-import { APIError, APIResponse, AuthResponse, LoginRequest, RegisterRequest } from '../types/api';
+import { APIError, AuthResponse, LoginRequest, RegisterRequest, EmissionCalculation, CompanyEntity, Report, Workflow, Consolidation } from '../types/api';
+
+// Request/Response types for API methods
+interface Scope1CalculationRequest {
+  calculation_name: string;
+  company_id: string;
+  reporting_period_start: string;
+  reporting_period_end: string;
+  activity_data: Array<{
+    activity_type: string;
+    fuel_type: string;
+    quantity: number;
+    unit: string;
+    data_quality: string;
+  }>;
+}
+
+interface Scope2CalculationRequest {
+  calculation_name: string;
+  company_id: string;
+  reporting_period_start: string;
+  reporting_period_end: string;
+  electricity_consumption: Array<{
+    activity_type: string;
+    quantity: number;
+    unit: string;
+    location: string;
+    data_quality: string;
+  }>;
+  calculation_method: 'location_based' | 'market_based';
+}
+
+interface EntityRequest {
+  company_id: string;
+  name: string;
+  entity_type: string;
+  ownership_percentage?: number;
+  has_operational_control: boolean;
+  has_financial_control: boolean;
+  location: {
+    country: string;
+    state?: string;
+    city?: string;
+  };
+}
+
+interface ReportRequest {
+  title: string;
+  report_type: 'sec_10k' | 'ghg_report' | 'sustainability_report';
+  company_id: string;
+  reporting_year: number;
+}
+
+interface WorkflowRequest {
+  title: string;
+  description?: string;
+  workflow_type: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  due_date?: string;
+}
+
+interface ConsolidationRequest {
+  company_id: string;
+  reporting_year: number;
+  consolidation_method: 'ownership_based' | 'operational_control' | 'financial_control' | 'equity_share';
+}
+
+interface LockUnlockRequest {
+  reason: string;
+  expires_at?: string;
+}
+
+interface WorkflowStatusUpdate {
+  status: 'draft' | 'pending' | 'in_progress' | 'completed' | 'rejected';
+  notes?: string;
+}
+
+interface PasswordChangeRequest {
+  current_password: string;
+  new_password: string;
+  confirm_password: string;
+}
 
 class APIClient {
   private baseURL: string;
@@ -96,12 +177,8 @@ class APIClient {
     });
   }
 
-  async changePassword(data: {
-    current_password: string;
-    new_password: string;
-    confirm_password: string;
-  }) {
-    return this.request('/auth/change-password', {
+  async changePassword(data: PasswordChangeRequest): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/auth/change-password', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -128,15 +205,15 @@ class APIClient {
     return this.request(`/emissions/factors${query ? `?${query}` : ''}`);
   }
 
-  async calculateScope1(data: any) {
-    return this.request('/emissions/calculate/scope1', {
+  async calculateScope1(data: Scope1CalculationRequest): Promise<EmissionCalculation> {
+    return this.request<EmissionCalculation>('/emissions/calculate/scope1', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async calculateScope2(data: any) {
-    return this.request('/emissions/calculate/scope2', {
+  async calculateScope2(data: Scope2CalculationRequest): Promise<EmissionCalculation> {
+    return this.request<EmissionCalculation>('/emissions/calculate/scope2', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -172,15 +249,15 @@ class APIClient {
     return this.request(`/entities/company/${companyId}${params}`);
   }
 
-  async createEntity(data: any) {
-    return this.request('/entities', {
+  async createEntity(data: EntityRequest): Promise<CompanyEntity> {
+    return this.request<CompanyEntity>('/entities', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async updateEntity(entityId: string, data: any) {
-    return this.request(`/entities/${entityId}`, {
+  async updateEntity(entityId: string, data: Partial<EntityRequest>): Promise<CompanyEntity> {
+    return this.request<CompanyEntity>(`/entities/${entityId}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
@@ -211,29 +288,29 @@ class APIClient {
     return this.request(`/reports${query ? `?${query}` : ''}`);
   }
 
-  async createReport(data: any) {
-    return this.request('/reports', {
+  async createReport(data: ReportRequest): Promise<Report> {
+    return this.request<Report>('/reports', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async updateReport(reportId: string, data: any) {
-    return this.request(`/reports/${reportId}`, {
+  async updateReport(reportId: string, data: Partial<ReportRequest>): Promise<Report> {
+    return this.request<Report>(`/reports/${reportId}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
-  async lockReport(reportId: string, data: any) {
-    return this.request(`/reports/${reportId}/lock`, {
+  async lockReport(reportId: string, data: LockUnlockRequest): Promise<Report> {
+    return this.request<Report>(`/reports/${reportId}/lock`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async unlockReport(reportId: string, data: any) {
-    return this.request(`/reports/${reportId}/unlock`, {
+  async unlockReport(reportId: string, data: LockUnlockRequest): Promise<Report> {
+    return this.request<Report>(`/reports/${reportId}/unlock`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -258,15 +335,15 @@ class APIClient {
     return this.request(`/workflow${query ? `?${query}` : ''}`);
   }
 
-  async createWorkflow(data: any) {
-    return this.request('/workflow', {
+  async createWorkflow(data: WorkflowRequest): Promise<Workflow> {
+    return this.request<Workflow>('/workflow', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async updateWorkflowStatus(workflowId: string, data: any) {
-    return this.request(`/workflow/${workflowId}/status`, {
+  async updateWorkflowStatus(workflowId: string, data: WorkflowStatusUpdate): Promise<Workflow> {
+    return this.request<Workflow>(`/workflow/${workflowId}/status`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
@@ -278,23 +355,23 @@ class APIClient {
     return this.request(`/consolidation/company/${companyId}${params}`);
   }
 
-  async createConsolidation(data: any) {
-    return this.request('/consolidation', {
+  async createConsolidation(data: ConsolidationRequest): Promise<Consolidation> {
+    return this.request<Consolidation>('/consolidation', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async approveConsolidation(consolidationId: string, data: any) {
-    return this.request(`/consolidation/${consolidationId}/approve`, {
+  async approveConsolidation(consolidationId: string, data: { approved_by: string; notes?: string }): Promise<Consolidation> {
+    return this.request<Consolidation>(`/consolidation/${consolidationId}/approve`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   // EPA Data endpoints
-  async refreshEPAData(data?: any) {
-    return this.request('/epa/refresh', {
+  async refreshEPAData(data?: { force_refresh?: boolean; sources?: string[] }): Promise<{ message: string; updated_count: number }> {
+    return this.request<{ message: string; updated_count: number }>('/epa/refresh', {
       method: 'POST',
       body: JSON.stringify(data || {}),
     });

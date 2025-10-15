@@ -9,7 +9,7 @@ export default function DashboardPage() {
   const { user } = useAuthStore();
 
   // Fetch dashboard summary data
-  const { data: emissionsSummary, isLoading: emissionsLoading } = useQuery<EmissionsSummary>({
+  const { data: emissionsSummary } = useQuery<EmissionsSummary>({
     queryKey: ['emissions-summary'],
     queryFn: () => apiClient.getCompanyEmissionsSummary('default-company', new Date().getFullYear()) as Promise<EmissionsSummary>,
     enabled: !!user,
@@ -59,7 +59,7 @@ export default function DashboardPage() {
           Welcome back, {user?.full_name || 'User'}!
         </h1>
         <p className="mt-2 text-gray-600">
-          Here's an overview of your emissions data and compliance status.
+          Here&apos;s an overview of your emissions data and compliance status.
         </p>
       </div>
 
@@ -111,7 +111,7 @@ export default function DashboardPage() {
             </div>
           ) : recentCalculations?.items?.length ? (
             <div className="space-y-4">
-              {recentCalculations.items.map((calc: any) => (
+              {recentCalculations.items.map((calc: EmissionCalculation) => (
                 <div key={calc.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                   <div>
                     <p className="text-sm font-medium text-gray-900">
