@@ -149,14 +149,14 @@ function createAuthChallenge(): NextResponse {
         <div class="logo">EnvoYou</div>
         <div class="staging-badge">Staging Environment</div>
         <div class="message">
-          This is a protected staging environment. Please use the credentials below to access the application.
+          This is a protected staging environment. Please use your credentials to access the application.
         </div>
         <div class="credentials">
-          <strong>Username:</strong> staging<br>
-          <strong>Password:</strong> envoyou2024!
+          <strong>Username:</strong> your username<br>
+          <strong>Password:</strong> your password
         </div>
         <div style="color: #9ca3af; font-size: 0.875rem;">
-          Contact the development team for access.
+          <a href="mailto:hello@envoyou.com">Contact the development team</a> for access.
         </div>
       </div>
     </body>
