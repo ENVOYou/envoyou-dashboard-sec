@@ -73,8 +73,8 @@ function decodeBasicAuth(authHeader: string): { username: string; password: stri
 
 // Validate credentials against environment variables
 function isValidCredentials(username: string, password: string): boolean {
-  const validUsername = process.env.STAGING_USERNAME || 'staging';
-  const validPassword = process.env.STAGING_PASSWORD || 'envoyou2024!';
+  const validUsername = process.env.STAGING_USERNAME;
+  const validPassword = process.env.STAGING_PASSWORD;
 
   return username === validUsername && password === validPassword;
 }
