@@ -93,6 +93,19 @@ class APIClient {
     return localStorage.getItem('auth_token');
   }
 
+  private getBasicAuthHeader(): string | null {
+    const username = process.env.NEXT_PUBLIC_STAGING_API_USER;
+    const password = process.env.NEXT_PUBLIC_STAGING_API_PASS;
+
+    if (username && password) {
+      // Create Basic Auth header: Base64 encoded "username:password"
+      const credentials = btoa(`${username}:${password}`);
+      return `Basic ${credentials}`;
+    }
+
+    return null;
+  }
+
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
@@ -104,6 +117,15 @@ class APIClient {
       ...(options.headers as Record<string, string>),
     };
 
+    // Add Basic Auth header for staging environments (nginx auth)
+    const basicAuth = this.getBasicAuthHeader();
+    if (basicAuth) {
+      headers.Authorization = basicAuth;
+    }
+
+    // Add Bearer token if available (API auth)
+    // Note: If both are present, Authorization header will be overridden
+    // This is correct behavior - Bearer token takes precedence for API auth
     const token = this.getAuthToken();
     if (token) {
       headers.Authorization = `Bearer ${token}`;
