@@ -3,24 +3,19 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { useAuthStore } from '@/stores/auth-store';
-import { EmissionsSummary, EmissionCalculation } from '@/types/api';
+import { EmissionsSummary } from '@/types/api';
+import { MetricCard } from '@/components/dashboard/MetricCard';
+import { EmissionsChart } from '@/components/dashboard/EmissionsChart';
+import { RecentCalculations } from '@/components/dashboard/RecentCalculations';
+import { Activity, TrendingUp, BarChart3, CheckCircle } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
 
   // Fetch dashboard summary data
-  const { data: emissionsSummary } = useQuery<EmissionsSummary>({
+  const { data: emissionsSummary, isLoading: summaryLoading } = useQuery<EmissionsSummary>({
     queryKey: ['emissions-summary'],
     queryFn: () => apiClient.getCompanyEmissionsSummary('default-company', new Date().getFullYear()) as Promise<EmissionsSummary>,
-    enabled: !!user,
-  });
-
-  const { data: recentCalculations, isLoading: calculationsLoading } = useQuery<{ items: EmissionCalculation[] }>({
-    queryKey: ['recent-calculations'],
-    queryFn: () => apiClient.getEmissionsCalculations({
-      limit: 5,
-      status: 'completed'
-    }) as Promise<{ items: EmissionCalculation[] }>,
     enabled: !!user,
   });
 
@@ -29,25 +24,33 @@ export default function DashboardPage() {
       name: 'Total CO2e Emissions',
       value: emissionsSummary ? `${emissionsSummary.total_co2e.toFixed(2)} tCO2e` : '0.00 tCO2e',
       change: '+4.75%',
-      changeType: 'positive',
+      changeType: 'positive' as const,
+      icon: <BarChart3 className="h-5 w-5" />,
+      loading: summaryLoading,
     },
     {
       name: 'Scope 1 Emissions',
       value: emissionsSummary ? `${emissionsSummary.total_scope1_co2e?.toFixed(2) || 0} tCO2e` : '0.00 tCO2e',
       change: '+2.1%',
-      changeType: 'positive',
+      changeType: 'positive' as const,
+      icon: <Activity className="h-5 w-5" />,
+      loading: summaryLoading,
     },
     {
       name: 'Scope 2 Emissions',
       value: emissionsSummary ? `${emissionsSummary.total_scope2_co2e?.toFixed(2) || 0} tCO2e` : '0.00 tCO2e',
       change: '-1.2%',
-      changeType: 'negative',
+      changeType: 'negative' as const,
+      icon: <TrendingUp className="h-5 w-5" />,
+      loading: summaryLoading,
     },
     {
       name: 'Data Quality Score',
       value: emissionsSummary ? `${emissionsSummary.data_quality_score}%` : '0%',
       change: '+5.4%',
-      changeType: 'positive',
+      changeType: 'positive' as const,
+      icon: <CheckCircle className="h-5 w-5" />,
+      loading: summaryLoading,
     },
   ];
 
@@ -59,122 +62,32 @@ export default function DashboardPage() {
           Welcome back, {user?.full_name || 'User'}!
         </h1>
         <p className="mt-2 text-gray-600">
-          Here&apos;s an overview of your emissions data and compliance status.
+          Here's an overview of your emissions data and compliance status.
         </p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
-          <div key={stat.name} className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      {stat.name}
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {stat.value}
-                    </dd>
-                  </dl>
-                </div>
-                <div className="flex-shrink-0">
-                  <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    stat.changeType === 'positive'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {stat.change}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <MetricCard
+            key={stat.name}
+            title={stat.name}
+            value={stat.value}
+            change={stat.change}
+            changeType={stat.changeType}
+            icon={stat.icon}
+            loading={stat.loading}
+          />
         ))}
       </div>
 
-      {/* Recent Activity */}
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-            Recent Calculations
-          </h3>
-
-          {calculationsLoading ? (
-            <div className="animate-pulse">
-              <div className="space-y-3">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-4 bg-gray-200 rounded w-full"></div>
-                ))}
-              </div>
-            </div>
-          ) : recentCalculations?.items?.length ? (
-            <div className="space-y-4">
-              {recentCalculations.items.map((calc: EmissionCalculation) => (
-                <div key={calc.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {calc.calculation_name}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Scope {calc.scope_type} • {calc.total_co2e?.toFixed(2)} tCO2e
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-500">
-                      {new Date(calc.created_at).toLocaleDateString()}
-                    </p>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      calc.status === 'completed'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {calc.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-500">No calculations found.</p>
-              <p className="text-sm text-gray-400 mt-1">
-                Start by calculating your emissions data.
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-            Quick Actions
-          </h3>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <a
-            href="/dashboard/emissions"
-            className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-          >
-            <span className="mr-2">🧮</span>
-            New Calculation
-          </a>
-          <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-            <span className="mr-2">📄</span>
-            Generate Report
-          </button>
-          <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-            <span className="mr-2">🏢</span>
-            Add Entity
-          </button>
-          <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-            <span className="mr-2">📊</span>
-            View Analytics
-          </button>
-        </div>
-        </div>
+      {/* Charts and Recent Activity */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        <EmissionsChart
+          companyId="default-company"
+          title="Emissions Trend (Last 12 Months)"
+        />
+        <RecentCalculations limit={5} />
       </div>
     </div>
   );
