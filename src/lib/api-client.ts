@@ -98,9 +98,13 @@ class APIClient {
     const username = process.env.NEXT_PUBLIC_STAGING_API_USER;
     const password = process.env.NEXT_PUBLIC_STAGING_API_PASS;
 
-    // Create Basic Auth header: Base64 encoded "username:password"
-    const credentials = btoa(`${username}:${password}`);
-    return `Basic ${credentials}`;
+    if (username && password) {
+      // Create Basic Auth header: Base64 encoded "username:password"
+      const credentials = btoa(`${username}:${password}`);
+      return `Basic ${credentials}`;
+    }
+
+    return null;
   }
 
   private async request<T>(
