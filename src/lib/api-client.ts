@@ -94,16 +94,13 @@ class APIClient {
   }
 
   private getBasicAuthHeader(): string | null {
+    // Use environment variables for staging credentials (configurable)
     const username = process.env.NEXT_PUBLIC_STAGING_API_USER;
     const password = process.env.NEXT_PUBLIC_STAGING_API_PASS;
 
-    if (username && password) {
-      // Create Basic Auth header: Base64 encoded "username:password"
-      const credentials = btoa(`${username}:${password}`);
-      return `Basic ${credentials}`;
-    }
-
-    return null;
+    // Create Basic Auth header: Base64 encoded "username:password"
+    const credentials = btoa(`${username}:${password}`);
+    return `Basic ${credentials}`;
   }
 
   private async request<T>(
