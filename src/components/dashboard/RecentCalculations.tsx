@@ -5,7 +5,7 @@ import { apiClient } from '@/lib/api-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loading } from '@/components/ui/loading';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { EmissionCalculation } from '@/types/api';
+import { EmissionCalculation, CalculationResponse } from '@/types/api';
 import { CheckCircle, Clock, AlertCircle } from 'lucide-react';
 
 interface RecentCalculationsProps {
@@ -13,7 +13,7 @@ interface RecentCalculationsProps {
 }
 
 export function RecentCalculations({ limit = 5 }: RecentCalculationsProps) {
-  const { data: calculations, isLoading, error } = useQuery({
+  const { data: calculations, isLoading, error } = useQuery<CalculationResponse>({
     queryKey: ['recent-calculations', limit],
     queryFn: () => apiClient.getEmissionsCalculations({
       limit,

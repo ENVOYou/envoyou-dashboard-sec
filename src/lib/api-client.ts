@@ -1,4 +1,4 @@
-import { APIError, AuthResponse, LoginRequest, RegisterRequest, EmissionCalculation, CompanyEntity, Report, Workflow, Consolidation } from '../types/api';
+import { APIError, AuthResponse, LoginRequest, RegisterRequest, EmissionCalculation, CalculationResponse, CompanyEntity, Report, Workflow, Consolidation } from '../types/api';
 
 // Request/Response types for API methods
 interface Scope1CalculationRequest {
@@ -247,7 +247,7 @@ class APIClient {
     status?: string;
     limit?: number;
     offset?: number;
-  }) {
+  }): Promise<CalculationResponse> {
     const searchParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {

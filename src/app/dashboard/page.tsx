@@ -62,7 +62,7 @@ export default function DashboardPage() {
           Welcome back, {user?.full_name || 'User'}!
         </h1>
         <p className="mt-2 text-gray-600">
-          Here's an overview of your emissions data and compliance status.
+          Here&rsquo;s an overview of your emissions data and compliance status.
         </p>
       </div>
 

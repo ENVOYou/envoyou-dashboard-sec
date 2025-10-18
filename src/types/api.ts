@@ -1,5 +1,9 @@
 // API Response Types matching backend schemas
 
+export interface CalculationResponse {
+  items: EmissionCalculation[];
+}
+
 export interface User {
   id: string;
   email: string;
