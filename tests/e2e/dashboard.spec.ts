@@ -135,14 +135,31 @@ test.describe('Dashboard', () => {
   test('should handle dark mode toggle', async ({ page }) => {
     await page.goto('/dashboard');
 
-    // Check for theme toggle button
-    const themeToggle = page.locator('[aria-label="Toggle theme"]').first();
+    // Check for theme toggle button (look for button with monitor/sun/moon icon)
+    const themeToggle = page.locator('button').filter({ hasText: /🖥️|☀️|🌙/ }).first();
     await expect(themeToggle).toBeVisible();
 
-    // Click to toggle dark mode
+    // Click to open dropdown
     await themeToggle.click();
 
-    // Check that dark mode is applied (body should have dark class)
+    // Should show theme options
+    await expect(page.getByText('Light')).toBeVisible();
+    await expect(page.getByText('Dark')).toBeVisible();
+    await expect(page.getByText('System')).toBeVisible();
+
+    // Select dark mode
+    await page.getByText('Dark').click();
+
+    // Check that dark mode is applied (html should have dark class)
     await expect(page.locator('html')).toHaveClass(/dark/);
+
+    // Click theme toggle again
+    await themeToggle.click();
+
+    // Select light mode
+    await page.getByText('Light').click();
+
+    // Check that dark mode is removed
+    await expect(page.locator('html')).not.toHaveClass(/dark/);
   });
 });
