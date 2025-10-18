@@ -34,7 +34,7 @@ yarn-error.log*
 .env.staging
 .env.local
 .env.production
-.env
+.env.*
 
 # vercel
 .vercel
@@ -42,3 +42,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Playwright test artifacts
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# SWC cache (Next.js / Turbopack)
+/.swc/

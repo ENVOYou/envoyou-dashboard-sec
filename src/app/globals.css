@@ -49,10 +49,11 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: var(--border);
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--background);
+    color: var(--foreground);
   }
 }
 
@@ -102,7 +103,9 @@
 
 /* Focus styles for accessibility */
 .focus-visible {
-  @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  @apply outline-none ring-2 ring-offset-2; 
+  ring-color: var(--ring);
+  ring-offset-color: var(--background);
 }
 
 /* Custom button hover effects */
