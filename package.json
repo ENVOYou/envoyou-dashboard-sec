@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
+    "build:analyze": "next build --turbopack && npx next-bundle-analyzer",
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
@@ -12,6 +13,13 @@
     "test:coverage": "jest --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "test:performance": "lhci autorun",
+    "test:performance:local": "npx lhci autorun --config=lighthouserc.local.js",
+    "test:performance:monitor": "node scripts/performance-monitor.js",
+    "analyze": "npx next-bundle-analyzer .next/static",
+    "vercel:dev": "vercel dev",
+    "vercel:preview": "vercel",
+    "vercel:prod": "vercel --prod",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
