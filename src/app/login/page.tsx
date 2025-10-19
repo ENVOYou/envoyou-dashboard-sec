@@ -35,21 +35,29 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!recaptchaLoaded) {
-      alert('reCAPTCHA is still loading. Please try again.');
-      return;
-    }
+    // Only check reCAPTCHA if it's enabled
+    const isRecaptchaEnabled = process.env.NEXT_PUBLIC_RECAPTCHA_ENABLED === 'true';
 
-    const token = await executeRecaptcha('login');
-    if (!token) {
-      alert('reCAPTCHA verification failed. Please try again.');
-      return;
-    }
+    if (isRecaptchaEnabled) {
+      if (!recaptchaLoaded) {
+        alert('reCAPTCHA is still loading. Please try again.');
+        return;
+      }
 
-    loginMutation.mutate({
-      ...formData,
-      recaptcha_token: token,
-    });
+      const token = await executeRecaptcha('login');
+      if (!token) {
+        alert('reCAPTCHA verification failed. Please try again.');
+        return;
+      }
+
+      loginMutation.mutate({
+        ...formData,
+        recaptcha_token: token,
+      });
+    } else {
+      // reCAPTCHA is disabled, proceed without token
+      loginMutation.mutate(formData);
+    }
   };
 
   return (

@@ -21,13 +21,14 @@ export function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Allow access to static assets, API routes, and Next.js internals
+  // Allow access to static assets, API routes, login page, and Next.js internals
   if (
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/api/') ||
     pathname.startsWith('/favicon.ico') ||
     pathname.startsWith('/robots.txt') ||
     pathname.startsWith('/sitemap.xml') ||
+    pathname.startsWith('/login') ||
     pathname.includes('.')
   ) {
     const response = NextResponse.next();
