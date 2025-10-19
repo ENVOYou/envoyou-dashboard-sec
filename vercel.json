@@ -5,12 +5,6 @@
   "installCommand": "npm ci",
   "framework": "nextjs",
   "regions": ["sin1", "iad1"],
-  "functions": {
-    "src/app/api/**/*.ts": {
-      "runtime": "@vercel/node",
-      "maxDuration": 30
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",
@@ -32,25 +26,6 @@
           "value": "strict-origin-when-cross-origin"
         }
       ]
-    }
-  ],
-  "redirects": [
-    {
-      "source": "/old-route",
-      "destination": "/new-route",
-      "permanent": true
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    }
-  ],
-  "crons": [
-    {
-      "path": "/api/cron/example",
-      "schedule": "0 0 * * *"
     }
   ]
 }

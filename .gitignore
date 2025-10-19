@@ -50,3 +50,5 @@ next-env.d.ts
 
 # SWC cache (Next.js / Turbopack)
 /.swc/
+
+log-error.md
