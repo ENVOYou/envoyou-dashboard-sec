@@ -59,12 +59,6 @@ STAGING_PASSWORD=your_secure_password
 NEXT_PUBLIC_ENV=staging
 ```
 
-### Default Credentials
-
-For development/testing, the default credentials are:
-- **Username**: `staging`
-- **Password**: `envoyou2024!`
-
 ### How It Works
 
 1. **Environment Detection**: The middleware checks if the app is running in a staging environment
