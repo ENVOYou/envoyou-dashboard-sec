@@ -1,0 +1,166 @@
+name: Coverage Quality Gates
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'jest.config.js'
+
+jobs:
+  coverage-analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Generate coverage report
+        run: |
+          # Generate detailed coverage report
+          npx jest --coverage --coverageReporters=json-summary --outputFile=coverage/coverage-summary.json
+
+      - name: Analyze coverage by directory
+        run: |
+          echo "📊 Coverage Analysis by Directory:"
+          echo ""
+
+          # Components coverage
+          if [ -f "coverage/coverage-summary.json" ]; then
+            node -e "
+              const coverage = JSON.parse(require('fs').readFileSync('coverage/coverage-summary.json'));
+              console.log('📁 Components:', Math.round(coverage.total.lines.pct) + '%');
+              if (coverage['src/components/']) {
+                console.log('  UI Components:', Math.round(coverage['src/components/ui/']?.lines?.pct || 0) + '%');
+                console.log('  Auth Components:', Math.round(coverage['src/components/auth/']?.lines?.pct || 0) + '%');
+                console.log('  Dashboard Components:', Math.round(coverage['src/components/dashboard/']?.lines?.pct || 0) + '%');
+              }
+              console.log('🔧 Hooks:', Math.round(coverage['src/hooks/']?.lines?.pct || 0) + '%');
+              console.log('📚 Libraries:', Math.round(coverage['src/lib/']?.lines?.pct || 0) + '%');
+            "
+          fi
+
+      - name: Check coverage thresholds
+        run: |
+          echo "🔍 Checking Coverage Quality Gates..."
+          echo ""
+
+          COVERAGE_FILE="coverage/coverage-summary.json"
+          if [ -f "$COVERAGE_FILE" ]; then
+            # Overall coverage check
+            OVERALL_COVERAGE=$(node -p "JSON.parse(require('fs').readFileSync('$COVERAGE_FILE')).total.lines.pct")
+            MIN_OVERALL=70
+
+            echo "📊 Overall Coverage: $OVERALL_COVERAGE%"
+            if (( $(echo "$OVERALL_COVERAGE < $MIN_OVERALL" | bc -l) )); then
+              echo "❌ Overall coverage $OVERALL_COVERAGE% is below minimum $MIN_OVERALL%"
+              echo ""
+              echo "💡 To improve coverage:"
+              echo "  - Add tests for untested components"
+              echo "  - Test error scenarios and edge cases"
+              echo "  - Add integration tests for complex flows"
+              exit 1
+            else
+              echo "✅ Overall coverage $OVERALL_COVERAGE% meets minimum threshold"
+            fi
+
+            echo ""
+
+            # Component-specific checks
+            echo "🔍 Component Coverage Analysis:"
+
+            # UI Components
+            UI_COVERAGE=$(node -p "JSON.parse(require('fs').readFileSync('$COVERAGE_FILE'))['src/components/ui/']?.lines?.pct || 0")
+            MIN_UI=80
+            echo "  UI Components: $UI_COVERAGE% (Target: $MIN_UI%)"
+            if (( $(echo "$UI_COVERAGE < $MIN_UI" | bc -l) )); then
+              echo "    ⚠️  UI components need more test coverage"
+            else
+              echo "    ✅ UI components have good coverage"
+            fi
+
+            # Hooks
+            HOOKS_COVERAGE=$(node -p "JSON.parse(require('fs').readFileSync('$COVERAGE_FILE'))['src/hooks/']?.lines?.pct || 0")
+            MIN_HOOKS=85
+            echo "  Hooks: $HOOKS_COVERAGE% (Target: $MIN_HOOKS%)"
+            if (( $(echo "$HOOKS_COVERAGE < $MIN_HOOKS" | bc -l) )); then
+              echo "    ⚠️  Hooks need more test coverage"
+            else
+              echo "    ✅ Hooks have excellent coverage"
+            fi
+
+            # Libraries
+            LIB_COVERAGE=$(node -p "JSON.parse(require('fs').readFileSync('$COVERAGE_FILE'))['src/lib/']?.lines?.pct || 0")
+            MIN_LIB=75
+            echo "  Libraries: $LIB_COVERAGE% (Target: $MIN_LIB%)"
+            if (( $(echo "$LIB_COVERAGE < $MIN_LIB" | bc -l) )); then
+              echo "    ⚠️  Libraries need more test coverage"
+            else
+              echo "    ✅ Libraries have good coverage"
+            fi
+
+          else
+            echo "❌ Coverage file not found"
+            exit 1
+          fi
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-analysis
+          path: |
+            coverage/
+            !coverage/tmp/
+          retention-days: 30
+
+      - name: Comment PR with coverage report
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Read coverage summary
+            const coveragePath = path.join(process.cwd(), 'coverage', 'coverage-summary.json');
+            if (fs.existsSync(coveragePath)) {
+              const coverage = JSON.parse(fs.readFileSync(coveragePath));
+
+              const overall = Math.round(coverage.total.lines.pct);
+              const components = Math.round(coverage['src/components/']?.lines?.pct || 0);
+              const hooks = Math.round(coverage['src/hooks/']?.lines?.pct || 0);
+              const lib = Math.round(coverage['src/lib/']?.lines?.pct || 0);
+
+              const comment = `## 📊 Coverage Report
+
+              **Overall Coverage:** ${overall}%
+              - Components: ${components}%
+              - Hooks: ${hooks}%
+              - Libraries: ${lib}%
+
+              ${overall >= 70 ? '✅' : '❌'} Coverage quality gate: ${overall >= 70 ? 'PASSED' : 'FAILED'}
+
+              ---
+              *Generated by Coverage Quality Gates workflow*`;
+
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }

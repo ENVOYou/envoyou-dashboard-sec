@@ -38,6 +38,29 @@ jobs:
           file: coverage/lcov.info
           flags: unittests
           name: Unit Tests Coverage
+          fail_ci_if_error: true
+
+      - name: Enforce Coverage Quality Gates
+        run: |
+          echo "Checking coverage thresholds..."
+          # Read coverage summary
+          COVERAGE_FILE="coverage/coverage-summary.json"
+          if [ -f "$COVERAGE_FILE" ]; then
+            # Extract overall coverage percentage
+            OVERALL_COVERAGE=$(node -p "JSON.parse(require('fs').readFileSync('$COVERAGE_FILE')).total.lines.pct")
+            echo "Overall coverage: $OVERALL_COVERAGE%"
+
+            # Check if coverage meets minimum threshold (70%)
+            MIN_COVERAGE=70
+            if (( $(echo "$OVERALL_COVERAGE < $MIN_COVERAGE" | bc -l) )); then
+              echo "❌ Coverage $OVERALL_COVERAGE% is below minimum threshold $MIN_COVERAGE%"
+              exit 1
+            else
+              echo "✅ Coverage $OVERALL_COVERAGE% meets minimum threshold $MIN_COVERAGE%"
+            fi
+          else
+            echo "⚠️ Coverage file not found, skipping coverage check"
+          fi
 
       - name: Install Playwright browsers
         run: npx playwright install
