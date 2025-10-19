@@ -15,8 +15,12 @@ export interface User {
 
 export interface AuthResponse {
   access_token: string;
+  refresh_token: string;
   token_type: string;
-  user: User;
+  expires_in: number;
+  user_id: string;
+  role: 'admin' | 'auditor' | 'cfo' | 'finance_team';
+  user?: User; // Optional for backward compatibility
 }
 
 export interface LoginRequest {

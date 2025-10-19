@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
 import { useAuthStore } from '@/stores/auth-store';
 import { useRecaptcha } from '@/hooks/useRecaptcha';
-import { AuthResponse, LoginRequest } from '@/types/api';
+import { AuthResponse, LoginRequest, User } from '@/types/api';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
