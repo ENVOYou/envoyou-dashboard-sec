@@ -2,7 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Performance optimizations
-  swcMinify: true,
   compress: true,
 
   // Vercel-specific optimizations
@@ -67,13 +66,14 @@ const nextConfig: NextConfig = {
 
     return config;
   },
-
+// 'serverComponentsExternalPackages' sekarang menjadi 'serverExternalPackages'
+  // dan berada di level atas (bukan di dalam 'experimental')
+  serverExternalPackages: [],
   // Experimental features for Vercel
   experimental: {
     // Enable Webpack 5 features
     webpackBuildWorker: true,
-    // Enable server components optimizations
-    serverComponentsExternalPackages: [],
+
   },
 };
 

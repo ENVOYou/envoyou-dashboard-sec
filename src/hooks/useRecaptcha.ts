@@ -16,7 +16,13 @@ export const useRecaptcha = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    const RECAPTCHA_ENABLED = process.env.NEXT_PUBLIC_RECAPTCHA_ENABLED === 'true';
     const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+
+    if (!RECAPTCHA_ENABLED) {
+      console.log('reCAPTCHA disabled for this environment');
+      return;
+    }
 
     if (!RECAPTCHA_SITE_KEY) {
       console.warn('reCAPTCHA site key not configured');
@@ -54,7 +60,13 @@ export const useRecaptcha = () => {
   }, []);
 
   const executeRecaptcha = useCallback(async (action: string = 'submit'): Promise<string | null> => {
+    const RECAPTCHA_ENABLED = process.env.NEXT_PUBLIC_RECAPTCHA_ENABLED === 'true';
     const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+
+    if (!RECAPTCHA_ENABLED) {
+      console.log('reCAPTCHA disabled for this environment');
+      return null;
+    }
 
     if (!isLoaded || !RECAPTCHA_SITE_KEY || !window.grecaptcha) {
       console.warn('reCAPTCHA not loaded or not configured');
