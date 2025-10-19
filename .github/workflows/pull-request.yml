@@ -2,7 +2,7 @@ name: Pull Request Testing
 
 on:
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, staging ]
 
 jobs:
   # Unit, Integration, and E2E Tests
