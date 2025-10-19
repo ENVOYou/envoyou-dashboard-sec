@@ -26,9 +26,32 @@ export default function LoginPage() {
       console.log('Login response:', response);
       return response;
     },
-    onSuccess: (data: AuthResponse) => {
-      console.log('Login successful, updating auth store:', data.user);
-      login(data.user, data.access_token);
+    onSuccess: async (data: AuthResponse) => {
+      console.log('Login successful, response data:', data);
+
+      let userData = data.user;
+
+      // Handle case where user data might be missing from response
+      if (!userData) {
+        console.log('User data missing from login response, fetching current user...');
+        try {
+          userData = await apiClient.getCurrentUser();
+          console.log('Fetched user data:', userData);
+        } catch (error) {
+          console.error('Failed to fetch user data:', error);
+          alert('Login failed: Unable to retrieve user information');
+          return;
+        }
+      }
+
+      if (!userData) {
+        console.error('Still no user data after fetching');
+        alert('Login failed: User data not available');
+        return;
+      }
+
+      console.log('Updating auth store with user:', userData);
+      login(userData, data.access_token);
       console.log('Auth store updated, redirecting to dashboard...');
       router.push('/dashboard');
     },

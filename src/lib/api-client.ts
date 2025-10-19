@@ -1,4 +1,5 @@
 import { APIError, AuthResponse, LoginRequest, RegisterRequest, EmissionCalculation, CalculationResponse, CompanyEntity, Report, Workflow, Consolidation } from '../types/api';
+import type { User } from '../types/api';
 
 // Request/Response types for API methods
 interface Scope1CalculationRequest {
@@ -191,8 +192,8 @@ class APIClient {
     });
   }
 
-  async getCurrentUser() {
-    return this.request('/auth/me');
+  async getCurrentUser(): Promise<User> {
+    return this.request<User>('/auth/me');
   }
 
   async refreshToken(): Promise<AuthResponse> {
