@@ -21,13 +21,19 @@ export default function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginRequest) => {
-      return await apiClient.login(data);
+      console.log('Attempting login to:', apiClient['baseURL']);
+      const response = await apiClient.login(data);
+      console.log('Login response:', response);
+      return response;
     },
     onSuccess: (data: AuthResponse) => {
+      console.log('Login successful, updating auth store:', data.user);
       login(data.user, data.access_token);
+      console.log('Auth store updated, redirecting to dashboard...');
       router.push('/dashboard');
     },
     onError: (error: Error) => {
+      console.error('Login failed:', error);
       alert(error.message || 'Login failed. Please check your credentials.');
     },
   });

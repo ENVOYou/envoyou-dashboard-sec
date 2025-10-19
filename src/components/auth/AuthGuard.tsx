@@ -20,7 +20,9 @@ export function AuthGuard({
   const router = useRouter();
 
   useEffect(() => {
+    console.log('AuthGuard - isLoading:', isLoading, 'user:', user);
     if (!isLoading && !user) {
+      console.log('AuthGuard - Redirecting to login');
       router.push(redirectTo);
     }
   }, [user, isLoading, router, redirectTo]);

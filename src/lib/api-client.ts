@@ -177,6 +177,7 @@ class APIClient {
 
   // Authentication endpoints
   async login(credentials: LoginRequest): Promise<AuthResponse> {
+    console.log('API Client - Login attempt to:', this.baseURL);
     return this.request<AuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
