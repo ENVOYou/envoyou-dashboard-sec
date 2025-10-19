@@ -119,18 +119,27 @@ class APIClient {
       ...(options.headers as Record<string, string>),
     };
 
-    // Add Basic Auth header for staging environments (nginx auth)
-    const basicAuth = this.getBasicAuthHeader();
-    if (basicAuth) {
-      headers.Authorization = basicAuth;
-    }
+    // For auth endpoints that need Bearer tokens, don't use basic auth
+    const isAuthEndpoint = endpoint.startsWith('/auth/') && endpoint !== '/auth/login' && endpoint !== '/auth/register';
 
-    // Add Bearer token if available (API auth)
-    // Note: If both are present, Authorization header will be overridden
-    // This is correct behavior - Bearer token takes precedence for API auth
-    const token = this.getAuthToken();
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
+    if (isAuthEndpoint) {
+      // Use Bearer token for authenticated endpoints
+      const token = this.getAuthToken();
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+    } else {
+      // Add Basic Auth header for staging environments (nginx auth)
+      const basicAuth = this.getBasicAuthHeader();
+      if (basicAuth) {
+        headers.Authorization = basicAuth;
+      }
+
+      // Add Bearer token if available (API auth) - overrides basic auth
+      const token = this.getAuthToken();
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
     }
 
     try {
