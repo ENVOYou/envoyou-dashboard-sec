@@ -29,23 +29,38 @@ export default function LoginPage() {
     onSuccess: async (data: AuthResponse) => {
       console.log('Login successful, response data:', data);
 
-      let userData = data.user;
+      // Backend returns user_id and role instead of full user object
+      // We need to construct the user object or fetch it
+      let userData: User | null = null;
 
-      // Handle case where user data might be missing from response
-      if (!userData) {
-        console.log('User data missing from login response, fetching current user...');
+      if (data.user) {
+        // Full user object provided
+        userData = data.user;
+      } else if (data.user_id && data.role) {
+        // Backend provided user_id and role, construct minimal user object
+        console.log('Constructing user object from login response');
+        userData = {
+          id: data.user_id,
+          email: '', // We don't have email in the response
+          full_name: '', // We don't have full_name in the response
+          role: data.role,
+          is_active: true, // Assume active
+          created_at: new Date().toISOString(), // Fallback
+          // Try to fetch complete user data
+        };
+
+        // Try to fetch complete user data
         try {
-          userData = await apiClient.getCurrentUser();
-          console.log('Fetched user data:', userData);
+          const fullUserData = await apiClient.getCurrentUser();
+          userData = { ...userData, ...fullUserData };
+          console.log('Fetched complete user data:', fullUserData);
         } catch (error) {
-          console.error('Failed to fetch user data:', error);
-          alert('Login failed: Unable to retrieve user information');
-          return;
+          console.log('Could not fetch complete user data, using minimal data');
         }
       }
 
       if (!userData) {
-        console.error('Still no user data after fetching');
+        console.error('No user data available');
         alert('Login failed: User data not available');
         return;
       }
