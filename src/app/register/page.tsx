@@ -5,103 +5,58 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
-import { useAuthStore } from '@/stores/auth-store';
-import { useRecaptcha } from '@/hooks/useRecaptcha';
-import { AuthResponse, LoginRequest, User } from '@/types/api';
+import { RegisterRequest } from '@/types/api';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [formData, setFormData] = useState({
     email: '',
+    username: '',
+    full_name: '',
     password: '',
+    confirmPassword: '',
   });
 
   const router = useRouter();
-  const { login } = useAuthStore();
-  const { executeRecaptcha, isLoaded: recaptchaLoaded } = useRecaptcha();
 
-  const loginMutation = useMutation({
-    mutationFn: async (data: LoginRequest) => {
-      console.log('Attempting login to:', apiClient['baseURL']);
-      const response = await apiClient.login(data);
-      console.log('Login response:', response);
+  const registerMutation = useMutation({
+    mutationFn: async (data: RegisterRequest) => {
+      console.log('Attempting registration to:', apiClient['baseURL']);
+      const response = await apiClient.register(data);
+      console.log('Registration response:', response);
       return response;
     },
-    onSuccess: async (data: AuthResponse) => {
-      console.log('Login successful, response data:', data);
-
-      // Backend returns user_id and role instead of full user object
-      // We need to construct the user object or fetch it
-      let userData: User | null = null;
-
-      if (data.user) {
-        // Full user object provided
-        userData = data.user;
-      } else if (data.user_id && data.role) {
-        // Backend provided user_id and role, construct minimal user object
-        console.log('Constructing user object from login response');
-        userData = {
-          id: data.user_id,
-          email: '', // We don't have email in the response
-          full_name: '', // We don't have full_name in the response
-          role: data.role,
-          is_active: true, // Assume active
-          created_at: new Date().toISOString(), // Fallback
-          // Try to fetch complete user data
-        };
-
-        // Try to fetch complete user data
-        try {
-          const fullUserData = await apiClient.getCurrentUser();
-          userData = { ...userData, ...fullUserData };
-          console.log('Fetched complete user data:', fullUserData);
-        } catch {
-          console.log('Could not fetch complete user data, using minimal data');
-        }
-      }
-
-      if (!userData) {
-        console.error('No user data available');
-        alert('Login failed: User data not available');
-        return;
-      }
-
-      console.log('Updating auth store with user:', userData);
-      login(userData, data.access_token);
-      console.log('Auth store updated, redirecting to dashboard...');
-      router.push('/dashboard');
+    onSuccess: () => {
+      console.log('Registration successful');
+      alert('Registration successful! Please check your email for verification instructions.');
+      router.push('/login');
     },
     onError: (error: Error) => {
-      console.error('Login failed:', error);
-      alert(error.message || 'Login failed. Please check your credentials.');
+      console.error('Registration failed:', error);
+      alert(error.message || 'Registration failed. Please try again.');
     },
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Only check reCAPTCHA if it's enabled
-    const isRecaptchaEnabled = process.env.NEXT_PUBLIC_RECAPTCHA_ENABLED === 'true';
-
-    if (isRecaptchaEnabled) {
-      if (!recaptchaLoaded) {
-        alert('reCAPTCHA is still loading. Please try again.');
-        return;
-      }
-
-      const token = await executeRecaptcha('login');
-      if (!token) {
-        alert('reCAPTCHA verification failed. Please try again.');
-        return;
-      }
-
-      loginMutation.mutate({
-        ...formData,
-        recaptcha_token: token,
-      });
-    } else {
-      // reCAPTCHA is disabled, proceed without token
-      loginMutation.mutate(formData);
+    if (formData.password !== formData.confirmPassword) {
+      alert('Passwords do not match');
+      return;
     }
+
+    if (formData.password.length < 8) {
+      alert('Password must be at least 8 characters long');
+      return;
+    }
+
+    registerMutation.mutate({
+      email: formData.email,
+      username: formData.username,
+      full_name: formData.full_name,
+      password: formData.password,
+      confirm_password: formData.confirmPassword,
+      role: 'finance_team', // Default role for new registrations
+    });
   };
 
   return (
@@ -112,15 +67,15 @@ export default function LoginPage() {
           <span className="ml-2 text-sm text-gray-500 self-end">SEC Dashboard</span>
         </div>
         <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-          Sign in to your account
+          Create your account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Or{' '}
+          Already have an account?{' '}
           <Link
-            href="/register"
+            href="/login"
             className="font-medium text-blue-600 hover:text-blue-500"
           >
-            create a new account
+            Sign in
           </Link>
         </p>
       </div>
@@ -148,6 +103,44 @@ export default function LoginPage() {
             </div>
 
             <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                Username
+              </label>
+              <div className="mt-1">
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  autoComplete="username"
+                  required
+                  value={formData.username}
+                  onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Choose a username"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="full_name" className="block text-sm font-medium text-gray-700">
+                Full Name
+              </label>
+              <div className="mt-1">
+                <input
+                  id="full_name"
+                  name="full_name"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  value={formData.full_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Enter your full name"
+                />
+              </div>
+            </div>
+
+            <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
@@ -156,46 +149,42 @@ export default function LoginPage() {
                   id="password"
                   name="password"
                   type="password"
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   required
                   value={formData.password}
                   onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Enter your password"
+                  placeholder="Create a password"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                Confirm Password
+              </label>
+              <div className="mt-1">
                 <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Confirm your password"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Remember me
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <Link
-                  href="/forgot-password"
-                  className="font-medium text-blue-600 hover:text-blue-500"
-                >
-                  Forgot your password?
-                </Link>
               </div>
             </div>
 
             <div>
               <button
                 type="submit"
-                disabled={loginMutation.isPending}
+                disabled={registerMutation.isPending}
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loginMutation.isPending ? 'Signing in...' : 'Sign in'}
+                {registerMutation.isPending ? 'Creating account...' : 'Create account'}
               </button>
             </div>
           </form>
