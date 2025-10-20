@@ -7,6 +7,7 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isInitialized: boolean;
 
   // Actions
   setUser: (user: User | null) => void;
@@ -14,15 +15,17 @@ interface AuthState {
   login: (user: User, token: string) => void;
   logout: () => void;
   setLoading: (loading: boolean) => void;
+  initialize: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       token: null,
       isAuthenticated: false,
-      isLoading: true,
+      isLoading: false, // Start with false to avoid infinite loading
+      isInitialized: false,
 
       setUser: (user) => set({ user, isAuthenticated: !!user }),
 
@@ -35,18 +38,43 @@ export const useAuthStore = create<AuthState>()(
           token,
           isAuthenticated: true,
           isLoading: false,
+          isInitialized: true,
         });
         console.log('AuthStore - State updated after login');
       },
 
-      logout: () => set({
-        user: null,
-        token: null,
-        isAuthenticated: false,
-        isLoading: false,
-      }),
+      logout: () => {
+        console.log('AuthStore - Logout called');
+        set({
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          isLoading: false,
+          isInitialized: true,
+        });
+        console.log('AuthStore - Logout complete');
+      },
 
       setLoading: (isLoading) => set({ isLoading }),
+
+      initialize: () => {
+        const state = get();
+        if (!state.isInitialized) {
+          console.log('AuthStore - Initializing auth state');
+
+          // For development/testing, assume no valid authentication
+          // In production, check for valid persisted data
+          const hasValidAuth = !!(state.token && state.user);
+          console.log('AuthStore - Has valid authentication:', hasValidAuth);
+
+          set({
+            isLoading: false,
+            isInitialized: true,
+          });
+
+          console.log('AuthStore - Initialization complete');
+        }
+      },
     }),
     {
       name: 'auth-storage',
@@ -64,3 +92,4 @@ export const useUser = () => useAuthStore((state) => state.user);
 export const useToken = () => useAuthStore((state) => state.token);
 export const useIsAuthenticated = () => useAuthStore((state) => state.isAuthenticated);
 export const useAuthLoading = () => useAuthStore((state) => state.isLoading);
+export const useAuthInitialized = () => useAuthStore((state) => state.isInitialized);

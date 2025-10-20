@@ -54,7 +54,7 @@ export default function LoginPage() {
           const fullUserData = await apiClient.getCurrentUser();
           userData = { ...userData, ...fullUserData };
           console.log('Fetched complete user data:', fullUserData);
-        } catch (error) {
+        } catch {
           console.log('Could not fetch complete user data, using minimal data');
         }
       }

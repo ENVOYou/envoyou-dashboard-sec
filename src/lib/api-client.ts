@@ -278,9 +278,9 @@ class APIClient {
   }
 
   // Company Entities endpoints
-  async getCompanyEntities(companyId: string, includeInactive = false) {
+  async getCompanyEntities(companyId: string, includeInactive = false): Promise<CompanyEntity[]> {
     const params = includeInactive ? '?include_inactive=true' : '';
-    return this.request(`/entities/company/${companyId}${params}`);
+    return this.request<CompanyEntity[]>(`/entities/company/${companyId}${params}`);
   }
 
   async createEntity(data: EntityRequest): Promise<CompanyEntity> {

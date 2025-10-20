@@ -16,31 +16,50 @@ export function AuthGuard({
   fallback,
   redirectTo = '/login'
 }: AuthGuardProps) {
-  const { user, isLoading } = useAuthStore();
+  const { user, isLoading, isInitialized, initialize } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
-    console.log('AuthGuard - isLoading:', isLoading, 'user:', user);
+    // Initialize auth state on mount
+    console.log('AuthGuard - Initializing auth state');
+    initialize();
+  }, [initialize]);
+
+  useEffect(() => {
+    console.log('AuthGuard - Auth check:', {
+      isLoading,
+      isInitialized,
+      hasUser: !!user,
+      shouldRedirect: !isLoading && !user
+    });
+
+    // Simple redirect logic: if not loading and no user, redirect
     if (!isLoading && !user) {
-      console.log('AuthGuard - Redirecting to login');
+      console.log('AuthGuard - Redirecting to login (no user)');
       router.push(redirectTo);
     }
   }, [user, isLoading, router, redirectTo]);
 
-  // Show loading state
-  if (isLoading) {
+  // Show loading state while checking authentication
+  if (isLoading || !isInitialized) {
+    console.log('AuthGuard - Showing loading state');
     return fallback || (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <Loading size="lg" text="Checking authentication..." />
+        <div className="flex flex-col items-center justify-center gap-2">
+          <div className="animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 h-12 w-12"></div>
+          <p className="text-sm text-gray-600">Checking authentication...</p>
+        </div>
       </div>
     );
   }
 
-  // Redirect if not authenticated
+  // Show nothing while redirecting (prevents flash of protected content)
   if (!user) {
-    return null; // Will redirect via useEffect
+    console.log('AuthGuard - No user, redirecting...');
+    return null;
   }
 
   // User is authenticated, render children
+  console.log('AuthGuard - User authenticated, rendering protected content');
   return <>{children}</>;
 }
