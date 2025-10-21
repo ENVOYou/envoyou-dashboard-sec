@@ -131,6 +131,7 @@ export function Scope2Calculator() {
   const { data: electricityFactors, isLoading: factorsLoading } = useQuery({
     queryKey: ['electricity-factors'],
     queryFn: () => apiClient.getEmissionsFactors({ category: 'electricity' }),
+    enabled: false, // Disable this query since we're not using electricityFactors
   });
 
   const calculateMutation = useMutation({

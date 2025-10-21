@@ -88,6 +88,7 @@ export function Scope1Calculator() {
   const { data: fuelFactors, isLoading: factorsLoading } = useQuery({
     queryKey: ['fuel-factors'],
     queryFn: () => apiClient.getEmissionsFactors({ category: 'fuel' }),
+    enabled: false, // Disable this query since we're not using fuelFactors
   });
 
   const calculateMutation = useMutation({

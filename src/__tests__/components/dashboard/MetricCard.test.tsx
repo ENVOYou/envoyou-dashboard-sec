@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import { MetricCard } from '@/components/dashboard/MetricCard';
-import { TrendingUp, TrendingDown, Minus, DollarSign } from 'lucide-react';
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({

@@ -1,10 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
-import { apiClient } from '@/lib/api-client';
 
 interface ForgotPasswordRequest {
   email: string;
@@ -13,7 +11,6 @@ interface ForgotPasswordRequest {
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const router = useRouter();
 
   const forgotPasswordMutation = useMutation({
     mutationFn: async (data: ForgotPasswordRequest) => {
@@ -55,7 +52,7 @@ export default function ForgotPasswordPage() {
             Check your email
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            We've sent a password reset link to {email}
+            We&apos;ve sent a password reset link to {email}
           </p>
         </div>
 
@@ -63,7 +60,7 @@ export default function ForgotPasswordPage() {
           <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
             <div className="text-center">
               <p className="text-sm text-gray-600 mb-4">
-                Didn't receive the email? Check your spam folder or{' '}
+                Didn&apos;t receive the email? Check your spam folder or{' '}
                 <button
                   onClick={() => setIsSubmitted(false)}
                   className="text-blue-600 hover:text-blue-500 font-medium"
@@ -95,7 +92,7 @@ export default function ForgotPasswordPage() {
           Forgot your password?
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Enter your email address and we'll send you a link to reset your password.
+          Enter your email address and we&apos;ll send you a link to reset your password.
         </p>
       </div>
 

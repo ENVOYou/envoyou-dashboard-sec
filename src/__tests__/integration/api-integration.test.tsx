@@ -1,26 +1,10 @@
 import '@testing-library/jest-dom';
-import { render, screen, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import type { LoginRequest, EmissionsSummary, CompanyEntity, Report } from '@/types/api';
 
-// Create a test query client
-const createTestQueryClient = () => new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-    },
-    mutations: {
-      retry: false,
-    },
-  },
-});
-
 describe('API Integration Tests', () => {
-  let queryClient: QueryClient;
 
   beforeEach(() => {
-    queryClient = createTestQueryClient();
     // Clear any existing auth tokens
     localStorage.clear();
   });

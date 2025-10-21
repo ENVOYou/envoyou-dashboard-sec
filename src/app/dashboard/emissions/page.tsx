@@ -20,6 +20,18 @@ export default function EmissionsPage() {
     queryFn: () => apiClient.getEmissionsFactors({ category: 'summary' }),
   });
 
+  // Fetch fuel factors count
+  const { data: fuelFactors } = useQuery({
+    queryKey: ['epa-factors-fuel'],
+    queryFn: () => apiClient.getEmissionsFactors({ category: 'fuel' }),
+  });
+
+  // Fetch electricity factors count
+  const { data: electricityFactors } = useQuery({
+    queryKey: ['epa-factors-electricity'],
+    queryFn: () => apiClient.getEmissionsFactors({ category: 'electricity' }),
+  });
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -33,7 +45,7 @@ export default function EmissionsPage() {
           </div>
           <div className="flex items-center space-x-4">
             <div className="text-sm text-gray-500">
-              EPA Factors: {factorsLoading ? 'Loading...' : `${(factorsSummary as any)?.length || 0} available`}
+              EPA Factors: {factorsLoading ? 'Loading...' : `${factorsSummary?.length || 0} available`}
             </div>
             <Button variant="outline" size="sm">
               <BarChart3 className="h-4 w-4 mr-2" />
@@ -58,11 +70,11 @@ export default function EmissionsPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center space-x-2">
               <Fuel className="h-4 w-4 text-blue-600" />
-              <span className="text-sm">Fuel Factors: {factorsLoading ? '...' : 'Available'}</span>
+              <span className="text-sm">Fuel Factors: {fuelFactors?.length || 0}</span>
             </div>
             <div className="flex items-center space-x-2">
               <Zap className="h-4 w-4 text-green-600" />
-              <span className="text-sm">Electricity Factors: {factorsLoading ? '...' : 'Available'}</span>
+              <span className="text-sm">Electricity Factors: {electricityFactors?.length || 0}</span>
             </div>
             <div className="flex items-center space-x-2">
               <Calculator className="h-4 w-4 text-purple-600" />

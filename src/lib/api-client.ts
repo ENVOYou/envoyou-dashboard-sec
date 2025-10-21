@@ -1,4 +1,4 @@
-import { APIError, AuthResponse, LoginRequest, RegisterRequest, EmissionCalculation, CalculationResponse, CompanyEntity, Report, Workflow, Consolidation } from '../types/api';
+import { APIError, AuthResponse, LoginRequest, RegisterRequest, EmissionCalculation, CalculationResponse, CompanyEntity, Report, Workflow, Consolidation, EPAFactor } from '../types/api';
 import type { User } from '../types/api';
 
 // Request/Response types for API methods
@@ -225,7 +225,7 @@ class APIClient {
     fuel_type?: string;
     electricity_region?: string;
     force_refresh?: boolean;
-  }) {
+  }): Promise<EPAFactor[]> {
     const searchParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -236,7 +236,7 @@ class APIClient {
     }
 
     const query = searchParams.toString();
-    return this.request(`/emissions/factors${query ? `?${query}` : ''}`);
+    return this.request<EPAFactor[]>(`/emissions/factors${query ? `?${query}` : ''}`);
   }
 
   async calculateScope1(data: Scope1CalculationRequest): Promise<EmissionCalculation> {
