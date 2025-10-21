@@ -120,26 +120,29 @@ class APIClient {
       ...(options.headers as Record<string, string>),
     };
 
-    // For auth endpoints that need Bearer tokens, don't use basic auth
-    const isAuthEndpoint = endpoint.startsWith('/auth/') && endpoint !== '/auth/login' && endpoint !== '/auth/register';
+    // Determine authentication method based on endpoint
+    const isLoginEndpoint = endpoint === '/auth/login';
+    const isRegisterEndpoint = endpoint === '/auth/register';
+    const isRefreshEndpoint = endpoint === '/auth/refresh';
 
-    if (isAuthEndpoint) {
-      // Use Bearer token for authenticated endpoints
-      const token = this.getAuthToken();
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-    } else {
-      // Add Basic Auth header for staging environments (nginx auth)
+    // Public auth endpoints (login, register, refresh) use Basic Auth in staging
+    if (isLoginEndpoint || isRegisterEndpoint || isRefreshEndpoint) {
+      // Add Basic Auth header for staging environments
       const basicAuth = this.getBasicAuthHeader();
       if (basicAuth) {
         headers.Authorization = basicAuth;
       }
-
-      // Add Bearer token if available (API auth) - overrides basic auth
+    } else {
+      // All other endpoints (including /auth/me, /auth/change-password, etc.) use Bearer token
       const token = this.getAuthToken();
       if (token) {
         headers.Authorization = `Bearer ${token}`;
+      } else {
+        // If no token available, fall back to Basic Auth for staging
+        const basicAuth = this.getBasicAuthHeader();
+        if (basicAuth) {
+          headers.Authorization = basicAuth;
+        }
       }
     }
 
@@ -157,9 +160,12 @@ class APIClient {
             const refreshResponse = await this.refreshToken();
             if (refreshResponse.access_token) {
               console.log('Token refreshed successfully');
-              // Update stored token
+              // Update stored tokens
               if (typeof window !== 'undefined') {
                 localStorage.setItem('auth_token', refreshResponse.access_token);
+                if (refreshResponse.refresh_token) {
+                  localStorage.setItem('refresh_token', refreshResponse.refresh_token);
+                }
               }
               // Retry the original request with new token
               return this.request<T>(endpoint, options, true);
@@ -233,8 +239,14 @@ class APIClient {
   }
 
   async refreshToken(): Promise<AuthResponse> {
+    const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
+    }
+
     return this.request<AuthResponse>('/auth/refresh', {
       method: 'POST',
+      body: JSON.stringify({ refresh_token: refreshToken }),
     });
   }
 

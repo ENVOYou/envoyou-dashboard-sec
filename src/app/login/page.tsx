@@ -66,6 +66,13 @@ export default function LoginPage() {
       }
 
       console.log('Updating auth store with user:', userData);
+      // Store tokens in localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('auth_token', data.access_token);
+        if (data.refresh_token) {
+          localStorage.setItem('refresh_token', data.refresh_token);
+        }
+      }
       login(userData, data.access_token);
       console.log('Auth store updated, redirecting to dashboard...');
       router.push('/dashboard');
