@@ -110,7 +110,8 @@ class APIClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    isRetry = false
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
 
@@ -149,8 +150,34 @@ class APIClient {
       });
 
       if (!response.ok) {
+        if (response.status === 401 && !isRetry) {
+          // Token expired or invalid - try to refresh token
+          console.log('Token expired, attempting refresh...');
+          try {
+            const refreshResponse = await this.refreshToken();
+            if (refreshResponse.access_token) {
+              console.log('Token refreshed successfully');
+              // Update stored token
+              if (typeof window !== 'undefined') {
+                localStorage.setItem('auth_token', refreshResponse.access_token);
+              }
+              // Retry the original request with new token
+              return this.request<T>(endpoint, options, true);
+            }
+          } catch (refreshError) {
+            console.log('Token refresh failed:', refreshError);
+            // Refresh failed, redirect to login
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('auth_token');
+              localStorage.removeItem('user');
+              window.location.href = '/login';
+            }
+            throw new Error('Session expired. Please login again.');
+          }
+        }
+
         if (response.status === 401) {
-          // Token expired or invalid
+          // Token expired and refresh failed or this is a retry
           if (typeof window !== 'undefined') {
             localStorage.removeItem('auth_token');
             localStorage.removeItem('user');
