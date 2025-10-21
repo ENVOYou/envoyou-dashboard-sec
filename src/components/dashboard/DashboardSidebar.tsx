@@ -15,9 +15,18 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { useState } from 'react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
@@ -29,14 +38,18 @@ const navigation = [
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
-export function DashboardSidebar() {
+interface DashboardSidebarProps {
+  collapsed: boolean;
+  setCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+}
+export function DashboardSidebar({ collapsed, setCollapsed }: DashboardSidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <>
-      {/* Mobile menu button */}
+      {/* 🟦 Mobile Menu Button */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <Button
           variant="outline"
@@ -48,7 +61,7 @@ export function DashboardSidebar() {
         </Button>
       </div>
 
-      {/* Mobile overlay */}
+      {/* 🔲 Mobile Overlay */}
       {isMobileMenuOpen && (
         <div
           className="lg:hidden fixed inset-0 z-40 bg-black bg-opacity-50"
@@ -56,64 +69,98 @@ export function DashboardSidebar() {
         />
       )}
 
-      {/* Sidebar */}
-      <div className={cn(
-        "fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-gray-900 shadow-lg border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
-        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-      )}>
-        <div className="flex grow flex-col gap-y-5 overflow-y-auto px-6 pb-4 pt-16 lg:pt-0">
-          <div className="flex h-16 shrink-0 items-center">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">EnvoYou</h1>
-            <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">SEC Dashboard</span>
+      {/* 🧭 Sidebar */}
+      <div
+        className={cn(
+          'fixed inset-y-0 left-0 z-50 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-lg transform transition-all duration-300 ease-in-out flex flex-col',
+          collapsed ? 'w-20' : 'w-72',
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        )}
+      >
+        {/* Header + Collapse Button */}
+        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-800">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <h1 className={cn('text-xl font-bold text-gray-900 dark:text-white transition-all', collapsed && 'opacity-0 w-0')}>
+              EnvoYou
+            </h1>
+            {!collapsed && (
+              <span className="text-xs text-gray-500 dark:text-gray-400">SEC Dashboard</span>
+            )}
           </div>
-          <nav className="flex flex-1 flex-col">
-            <ul role="list" className="flex flex-1 flex-col gap-y-7">
-              <li>
-                <ul role="list" className="-mx-2 space-y-1">
-                  {navigation.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <li key={item.name}>
-                        <Link
-                          href={item.href}
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className={cn(
-                            "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold transition-colors",
-                            pathname === item.href
-                              ? "bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400"
-                              : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-                          )}
-                        >
-                          <Icon className="h-5 w-5 shrink-0" />
-                          {item.name}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </li>
-              <li className="mt-auto">
-                <div className="flex items-center gap-x-4 px-2 py-3 text-sm font-semibold leading-6 text-gray-900 dark:text-white">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white text-xs font-bold">
-                    {user?.full_name?.charAt(0).toUpperCase() || 'U'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium truncate text-gray-900 dark:text-white">{user?.full_name || 'User'}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => logout()}
-                    className="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 shrink-0"
-                    title="Sign out"
-                  >
-                    <LogOut className="h-5 w-5" />
-                  </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hidden lg:flex text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            onClick={() => setCollapsed(!collapsed)}
+          >
+            {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+          </Button>
+        </div>
+
+        {/* Navigation */}
+        {navigation.map((item) => {
+        const Icon = item.icon;
+        const active = pathname === item.href;
+        return (
+            <li key={item.name}>
+            <TooltipProvider>
+                <Tooltip>
+                <TooltipTrigger asChild>
+                    <Link
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={cn(
+                        'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold transition-colors',
+                        active
+                        ? 'bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400'
+                        : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    )}
+                    >
+                    <Icon className="h-5 w-5 shrink-0" />
+                    {!collapsed && <span>{item.name}</span>}
+                    </Link>
+                </TooltipTrigger>
+
+                {collapsed && (
+                    <TooltipContent side="right" className="text-sm">
+                    {item.name}
+                    </TooltipContent>
+                )}
+                </Tooltip>
+            </TooltipProvider>
+            </li>
+        );
+        })}
+
+
+        {/* Footer / User Info */}
+        <div className="border-t border-gray-200 dark:border-gray-800 px-3 py-4">
+          <div className="flex items-center justify-between gap-2">
+            {!collapsed && (
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white text-xs font-bold">
+                  {user?.full_name?.charAt(0).toUpperCase() || 'U'}
                 </div>
-              </li>
-            </ul>
-          </nav>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    {user?.full_name || 'User'}
+                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {user?.email}
+                  </span>
+                </div>
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => logout()}
+              className="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 shrink-0"
+              title="Sign out"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
       </div>
     </>
