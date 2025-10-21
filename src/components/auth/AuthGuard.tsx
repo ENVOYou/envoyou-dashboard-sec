@@ -30,15 +30,15 @@ export function AuthGuard({
       isLoading,
       isInitialized,
       hasUser: !!user,
-      shouldRedirect: !isLoading && !user
+      shouldRedirect: isInitialized && !isLoading && !user
     });
 
-    // Simple redirect logic: if not loading and no user, redirect
-    if (!isLoading && !user) {
+    // Only redirect after initialization is complete
+    if (isInitialized && !isLoading && !user) {
       console.log('AuthGuard - Redirecting to login (no user)');
       router.push(redirectTo);
     }
-  }, [user, isLoading, router, redirectTo]);
+  }, [user, isLoading, isInitialized, router, redirectTo]);
 
   // Show loading state while checking authentication
   if (isLoading || !isInitialized) {

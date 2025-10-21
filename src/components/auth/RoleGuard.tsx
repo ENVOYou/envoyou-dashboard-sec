@@ -15,7 +15,16 @@ export function RoleGuard({
   allowedRoles,
   fallback,
 }: RoleGuardProps) {
-  const { user } = useAuthStore();
+  const { user, isInitialized, isLoading } = useAuthStore();
+
+  // Wait for authentication to be initialized before checking permissions
+  if (!isInitialized || isLoading) {
+    return (
+      <div className="min-h-[200px] flex items-center justify-center">
+        <div className="animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 h-8 w-8"></div>
+      </div>
+    );
+  }
 
   if (!user) {
     return null; // AuthGuard should handle this
