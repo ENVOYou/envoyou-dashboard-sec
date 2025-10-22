@@ -56,5 +56,9 @@ log-error.md
 log_error.md
 /.kilocode/
 /.specify/
+
+# documentation for implementation details
 README_ANOMALY_DETECTION_IMPLEMENTATION.md
 README_REPORTS_IMPLEMENTATION.md
+README_WORKFLOW_IMPLEMENTATION.md
+README_AUDIT_SYSTEM_IMPLEMENTATION.md

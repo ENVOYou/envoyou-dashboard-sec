@@ -69,6 +69,27 @@ import type {
   AnomalyDetectionError,
   DetectedAnomaly,
 } from '../types/anomaly-detection';
+import type {
+  AuditLog,
+  EnhancedAuditLog,
+  AuditFilters,
+  AuditSearchResult,
+  AuditTrailRequest,
+  AuditTrailResponse,
+  ForensicAnalysisRequest,
+  ForensicAnalysisResponse,
+  ComplianceReportRequest,
+  ComplianceReportResponse,
+  SecurityEvent,
+  AuditDashboardStats,
+  AuditActivity,
+  AuditExportRequest,
+  AuditReportRequest,
+  InvestigationRequest,
+  InvestigationResponse,
+  AuditLogsResponse,
+  AuditError,
+} from '../types/audit';
 
 // Request/Response types for API methods
 interface Scope1CalculationRequest {
@@ -979,6 +1000,223 @@ class APIClient {
     return this.request<{ success: boolean }>(`/anomaly-detection/anomaly/${anomalyId}/dismiss`, {
       method: 'POST',
       body: JSON.stringify({ reason }),
+    });
+  }
+
+  // Enhanced Audit System endpoints
+  async getAuditLogs(filters?: AuditFilters): Promise<AuditLogsResponse> {
+    const searchParams = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) {
+          if (Array.isArray(value)) {
+            value.forEach(v => searchParams.append(key, String(v)));
+          } else {
+            searchParams.append(key, String(value));
+          }
+        }
+      });
+    }
+
+    const query = searchParams.toString();
+    return this.request<AuditLogsResponse>(`/audit/logs${query ? `?${query}` : ''}`);
+  }
+
+  async getEnhancedAuditLogs(filters?: AuditFilters): Promise<AuditLogsResponse> {
+    const searchParams = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) {
+          if (Array.isArray(value)) {
+            value.forEach(v => searchParams.append(key, String(v)));
+          } else {
+            searchParams.append(key, String(value));
+          }
+        }
+      });
+    }
+
+    const query = searchParams.toString();
+    return this.request<AuditLogsResponse>(`/enhanced-audit/logs${query ? `?${query}` : ''}`);
+  }
+
+  async getAuditTrail(data: AuditTrailRequest): Promise<AuditTrailResponse> {
+    return this.request<AuditTrailResponse>('/audit/trail', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async performForensicAnalysis(data: ForensicAnalysisRequest): Promise<ForensicAnalysisResponse> {
+    return this.request<ForensicAnalysisResponse>('/audit/forensic-analysis', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async generateComplianceReport(data: ComplianceReportRequest): Promise<ComplianceReportResponse> {
+    return this.request<ComplianceReportResponse>('/audit/compliance-report', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getSecurityEvents(filters?: {
+    severity?: string[];
+    event_type?: string[];
+    company_id?: string;
+    date_from?: string;
+    date_to?: string;
+  }): Promise<SecurityEvent[]> {
+    const searchParams = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) {
+          if (Array.isArray(value)) {
+            value.forEach(v => searchParams.append(key, String(v)));
+          } else {
+            searchParams.append(key, String(value));
+          }
+        }
+      });
+    }
+
+    const query = searchParams.toString();
+    return this.request<SecurityEvent[]>(`/audit/security-events${query ? `?${query}` : ''}`);
+  }
+
+  async getAuditDashboardStats(): Promise<AuditDashboardStats> {
+    return this.request<AuditDashboardStats>('/audit/dashboard/stats');
+  }
+
+  async getAuditActivity(limit = 50): Promise<AuditActivity[]> {
+    return this.request<AuditActivity[]>(`/audit/activity?limit=${limit}`);
+  }
+
+  async searchAuditLogs(query: string, filters?: AuditFilters): Promise<AuditSearchResult> {
+    const searchParams = new URLSearchParams({ q: query });
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) {
+          if (Array.isArray(value)) {
+            value.forEach(v => searchParams.append(key, String(v)));
+          } else {
+            searchParams.append(key, String(value));
+          }
+        }
+      });
+    }
+
+    return this.request<AuditSearchResult>(`/audit/search?${searchParams.toString()}`);
+  }
+
+  async exportAuditLogs(data: AuditExportRequest): Promise<{ download_url: string; expires_at: string }> {
+    return this.request<{ download_url: string; expires_at: string }>('/audit/export', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async generateAuditReport(data: AuditReportRequest): Promise<{ download_url: string; expires_at: string }> {
+    return this.request<{ download_url: string; expires_at: string }>('/audit/report', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async createInvestigation(data: InvestigationRequest): Promise<InvestigationResponse> {
+    const formData = new FormData();
+    formData.append('title', data.title);
+    formData.append('description', data.description);
+    formData.append('type', data.type);
+    formData.append('priority', data.priority);
+    formData.append('assigned_to', JSON.stringify(data.assigned_to));
+    formData.append('scope', JSON.stringify(data.scope));
+    if (data.initial_findings) formData.append('initial_findings', data.initial_findings);
+    if (data.attachments) {
+      data.attachments.forEach((file, index) => {
+        formData.append(`attachment_${index}`, file);
+      });
+    }
+
+    return this.request<InvestigationResponse>('/audit/investigation', {
+      method: 'POST',
+      body: formData,
+      headers: {},
+    });
+  }
+
+  async getInvestigations(filters?: {
+    status?: string[];
+    priority?: string[];
+    assigned_to?: string;
+    company_id?: string;
+  }): Promise<InvestigationResponse[]> {
+    const searchParams = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) {
+          if (Array.isArray(value)) {
+            value.forEach(v => searchParams.append(key, String(v)));
+          } else {
+            searchParams.append(key, String(value));
+          }
+        }
+      });
+    }
+
+    const query = searchParams.toString();
+    return this.request<InvestigationResponse[]>(`/audit/investigations${query ? `?${query}` : ''}`);
+  }
+
+  async updateInvestigation(investigationId: string, data: Partial<InvestigationRequest>): Promise<InvestigationResponse> {
+    return this.request<InvestigationResponse>(`/audit/investigation/${investigationId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async closeInvestigation(investigationId: string, data: {
+    findings: string;
+    recommendations: string[];
+    evidence: string[];
+  }): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/audit/investigation/${investigationId}/close`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getAuditLogById(logId: string): Promise<AuditLog> {
+    return this.request<AuditLog>(`/audit/logs/${logId}`);
+  }
+
+  async getEnhancedAuditLogById(logId: string): Promise<EnhancedAuditLog> {
+    return this.request<EnhancedAuditLog>(`/enhanced-audit/logs/${logId}`);
+  }
+
+  async archiveAuditLogs(olderThan: string): Promise<{ archived_count: number; message: string }> {
+    return this.request<{ archived_count: number; message: string }>('/audit/archive', {
+      method: 'POST',
+      body: JSON.stringify({ older_than: olderThan }),
+    });
+  }
+
+  async getAuditRetentionPolicy(): Promise<{
+    default_retention: string;
+    category_retention: Record<string, string>;
+    compliance_requirements: string[];
+  }> {
+    return this.request('/audit/retention-policy');
+  }
+
+  async updateAuditRetentionPolicy(data: {
+    default_retention: string;
+    category_retention: Record<string, string>;
+  }): Promise<{ success: boolean; message: string }> {
+    return this.request<{ success: boolean; message: string }>('/audit/retention-policy', {
+      method: 'PUT',
+      body: JSON.stringify(data),
     });
   }
 

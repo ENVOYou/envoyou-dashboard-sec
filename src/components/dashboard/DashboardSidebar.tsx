@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Users,
   AlertTriangle,
+  Shield,
 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -37,8 +38,8 @@ const navigation = [
   { name: 'Reports', href: '/dashboard/reports', icon: FileText },
   { name: 'Workflows', href: '/dashboard/workflow', icon: Users },
   { name: 'Anomaly Detection', href: '/dashboard/anomalies', icon: AlertTriangle },
+  { name: 'Audit & Compliance', href: '/dashboard/audit', icon: Shield },
   { name: 'Calculation History', href: '/dashboard/calculations', icon: History },
-  { name: 'Audit Trail', href: '/dashboard/audit', icon: Search },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
