@@ -1,5 +1,29 @@
 import { APIError, AuthResponse, LoginRequest, RegisterRequest, EmissionCalculation, CalculationResponse, CompanyEntity, Report, Workflow, Consolidation, EPAFactor } from '../types/api';
 import type { User } from '../types/api';
+import type {
+  Report as EnhancedReport,
+  ReportLock,
+  ReportLockStatus,
+  LockReportRequest,
+  UnlockReportRequest,
+  ReportComment,
+  CommentCreate,
+  CommentResponse,
+  ReportCommentList,
+  ReportRevision,
+  RevisionResponse,
+  ReportRevisionList,
+  ReportsListResponse,
+  ReportsFilters,
+  CreateReportRequest,
+  UpdateReportRequest,
+  ReportsDashboardStats,
+  ReportActivity,
+  ReportNotification,
+  ReportPermissions,
+  BulkReportOperation,
+  BulkOperationResult,
+} from '../types/reports';
 
 // Request/Response types for API methods
 interface Scope1CalculationRequest {
@@ -342,50 +366,207 @@ class APIClient {
     });
   }
 
-  // Reports endpoints
-  async getReports(params?: {
-    status?: string;
-    limit?: number;
-    offset?: number;
-  }) {
+  // Enhanced Reports Management endpoints
+  async getReports(filters?: ReportsFilters): Promise<ReportsListResponse> {
     const searchParams = new URLSearchParams();
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined) {
-          searchParams.append(key, String(value));
+          if (Array.isArray(value)) {
+            value.forEach(v => searchParams.append(key, String(v)));
+          } else {
+            searchParams.append(key, String(value));
+          }
         }
       });
     }
 
     const query = searchParams.toString();
-    return this.request(`/reports${query ? `?${query}` : ''}`);
+    return this.request<ReportsListResponse>(`/reports${query ? `?${query}` : ''}`);
   }
 
-  async createReport(data: ReportRequest): Promise<Report> {
-    return this.request<Report>('/reports', {
+  async getReport(reportId: string): Promise<EnhancedReport> {
+    return this.request<EnhancedReport>(`/reports/${reportId}`);
+  }
+
+  async createReport(data: CreateReportRequest): Promise<EnhancedReport> {
+    return this.request<EnhancedReport>('/reports', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async updateReport(reportId: string, data: Partial<ReportRequest>): Promise<Report> {
-    return this.request<Report>(`/reports/${reportId}`, {
+  async updateReport(reportId: string, data: UpdateReportRequest): Promise<EnhancedReport> {
+    return this.request<EnhancedReport>(`/reports/${reportId}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
-  async lockReport(reportId: string, data: LockUnlockRequest): Promise<Report> {
-    return this.request<Report>(`/reports/${reportId}/lock`, {
+  async deleteReport(reportId: string): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/reports/${reportId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Report Locking System
+  async lockReport(reportId: string, data: LockReportRequest): Promise<ReportLock> {
+    return this.request<ReportLock>(`/reports/${reportId}/lock`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async unlockReport(reportId: string, data: LockUnlockRequest): Promise<Report> {
-    return this.request<Report>(`/reports/${reportId}/unlock`, {
+  async unlockReport(reportId: string, data: UnlockReportRequest): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/reports/${reportId}/unlock`, {
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  }
+
+  async getReportLockStatus(reportId: string): Promise<ReportLockStatus> {
+    return this.request<ReportLockStatus>(`/reports/${reportId}/lock-status`);
+  }
+
+  async getReportLocks(reportId: string): Promise<ReportLock[]> {
+    return this.request<ReportLock[]>(`/reports/${reportId}/locks`);
+  }
+
+  // Comments System
+  async addCommentToReport(reportId: string, data: CommentCreate): Promise<CommentResponse> {
+    const formData = new FormData();
+    formData.append('content', data.content);
+    formData.append('comment_type', data.comment_type || 'comment');
+    if (data.parent_id) formData.append('parent_id', data.parent_id);
+    if (data.mentions) formData.append('mentions', JSON.stringify(data.mentions));
+    if (data.attachments) {
+      data.attachments.forEach((file, index) => {
+        formData.append(`attachment_${index}`, file);
+      });
+    }
+
+    return this.request<CommentResponse>(`/reports/${reportId}/comments`, {
+      method: 'POST',
+      body: formData,
+      headers: {}, // Let browser set Content-Type for FormData
+    });
+  }
+
+  async getReportComments(reportId: string, parentId?: string): Promise<ReportCommentList> {
+    const params = parentId ? `?parent_id=${parentId}` : '';
+    return this.request<ReportCommentList>(`/reports/${reportId}/comments${params}`);
+  }
+
+  async resolveReportComment(reportId: string, commentId: string): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/reports/${reportId}/comments/${commentId}/resolve`, {
+      method: 'PUT',
+    });
+  }
+
+  async deleteReportComment(reportId: string, commentId: string): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/reports/${reportId}/comments/${commentId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Revisions System
+  async createReportRevision(reportId: string, data: {
+    change_type: string;
+    changes_summary: string;
+    previous_values?: Record<string, any>;
+    new_values?: Record<string, any>;
+  }): Promise<RevisionResponse> {
+    return this.request<RevisionResponse>(`/reports/${reportId}/revisions`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getReportRevisions(reportId: string): Promise<ReportRevisionList> {
+    return this.request<ReportRevisionList>(`/reports/${reportId}/revisions`);
+  }
+
+  // Dashboard and Analytics
+  async getReportsDashboardStats(): Promise<ReportsDashboardStats> {
+    return this.request<ReportsDashboardStats>('/reports/dashboard/stats');
+  }
+
+  async getReportActivity(reportId?: string, limit = 20): Promise<ReportActivity[]> {
+    const params = reportId ? `?report_id=${reportId}&limit=${limit}` : `?limit=${limit}`;
+    return this.request<ReportActivity[]>(`/reports/activity${params}`);
+  }
+
+  // Notifications
+  async getReportNotifications(unreadOnly = false): Promise<ReportNotification[]> {
+    const params = unreadOnly ? '?unread_only=true' : '';
+    return this.request<ReportNotification[]>(`/reports/notifications${params}`);
+  }
+
+  async markNotificationAsRead(notificationId: string): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/reports/notifications/${notificationId}/read`, {
+      method: 'PUT',
+    });
+  }
+
+  // Permissions
+  async getReportPermissions(reportId: string): Promise<ReportPermissions> {
+    return this.request<ReportPermissions>(`/reports/${reportId}/permissions`);
+  }
+
+  // Bulk Operations
+  async bulkOperation(data: BulkReportOperation): Promise<BulkOperationResult> {
+    return this.request<BulkOperationResult>('/reports/bulk', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Search
+  async searchReports(query: string, filters?: ReportsFilters): Promise<ReportsListResponse> {
+    const searchParams = new URLSearchParams({ q: query });
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) {
+          if (Array.isArray(value)) {
+            value.forEach(v => searchParams.append(key, String(v)));
+          } else {
+            searchParams.append(key, String(value));
+          }
+        }
+      });
+    }
+
+    return this.request<ReportsListResponse>(`/reports/search?${searchParams.toString()}`);
+  }
+
+  // Export/Import
+  async exportReports(data: {
+    report_ids: string[];
+    format: 'pdf' | 'excel' | 'csv' | 'json';
+    include_comments?: boolean;
+    include_revisions?: boolean;
+  }): Promise<{ download_url: string; expires_at: string }> {
+    return this.request<{ download_url: string; expires_at: string }>('/reports/export', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async importReports(file: File, options?: {
+    report_type?: string;
+    company_id?: string;
+    overwrite_existing?: boolean;
+  }): Promise<{ success: boolean; imported_count: number; errors: string[] }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (options?.report_type) formData.append('report_type', options.report_type);
+    if (options?.company_id) formData.append('company_id', options.company_id);
+    if (options?.overwrite_existing) formData.append('overwrite_existing', 'true');
+
+    return this.request<{ success: boolean; imported_count: number; errors: string[] }>('/reports/import', {
+      method: 'POST',
+      body: formData,
+      headers: {},
     });
   }
 
