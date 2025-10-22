@@ -1,5 +1,5 @@
-import { APIError, AuthResponse, LoginRequest, RegisterRequest, EmissionCalculation, CalculationResponse, CompanyEntity, Report, Workflow, Consolidation, EPAFactor } from '../types/api';
-import type { User } from '../types/api';
+import { APIError, AuthResponse, LoginRequest, RegisterRequest, EmissionCalculation, CalculationResponse, CompanyEntity, Workflow, Consolidation, EPAFactor, ReportsResponse, ReportComment } from '../types/api';
+import { Report, User } from '../types/reports';
 
 // Request/Response types for API methods
 interface Scope1CalculationRequest {
@@ -347,7 +347,7 @@ class APIClient {
     status?: string;
     limit?: number;
     offset?: number;
-  }) {
+  }): Promise<ReportsResponse> {
     const searchParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -358,7 +358,11 @@ class APIClient {
     }
 
     const query = searchParams.toString();
-    return this.request(`/reports${query ? `?${query}` : ''}`);
+    return this.request<ReportsResponse>(`/reports${query ? `?${query}` : ''}`);
+  }
+
+  async getReport(reportId: string): Promise<Report> {
+    return this.request<Report>(`/reports/${reportId}`);
   }
 
   async createReport(data: ReportRequest): Promise<Report> {

@@ -1,16 +1,8 @@
 // API Response Types matching backend schemas
+import { Report, User } from '../types/reports';
 
 export interface CalculationResponse {
   items: EmissionCalculation[];
-}
-
-export interface User {
-  id: string;
-  email: string;
-  full_name: string;
-  role: 'admin' | 'auditor' | 'cfo' | 'finance_team';
-  is_active: boolean;
-  created_at: string;
 }
 
 export interface AuthResponse {
@@ -91,21 +83,6 @@ export interface EmissionsSummary {
   last_updated: string;
 }
 
-export interface Report {
-  id: string;
-  title: string;
-  report_type: 'sec_10k' | 'ghg_report' | 'sustainability_report';
-  status: 'draft' | 'in_review' | 'approved' | 'locked';
-  company_id: string;
-  reporting_year: number;
-  created_by: string;
-  created_at: string;
-  updated_at: string;
-  locked_by?: string;
-  locked_at?: string;
-  expires_at?: string;
-}
-
 export interface Workflow {
   id: string;
   title: string;
@@ -183,3 +160,12 @@ export interface PaginatedResponse<T> {
   page_size: number;
   total_pages: number;
 }
+
+export interface ReportComment {
+  id: string;
+  content: string;
+  author: User;
+  created_at: string;
+}
+
+export type ReportsResponse = PaginatedResponse<Report>;

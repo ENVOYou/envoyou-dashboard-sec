@@ -3,6 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useReports } from '../use-reports';
 import { apiClient } from '@/lib/api-client';
+import { ReportsResponse } from '@/types/api';
 
 // Mock the API client
 jest.mock('@/lib/api-client');
@@ -26,11 +27,12 @@ const wrapper = ({ children }: { children: React.ReactNode }) => {
 describe('useReports hook', () => {
   it('should fetch and return reports data', async () => {
     // Mock the API response
-    const mockResponse = {
-      items: [{ id: '1', title: 'Test Report', report_type: 'ghg_report', reporting_year: 2023, status: 'draft', created_at: '', updated_at: '', is_locked: false, comments: [], revisions: [] }],
+    const mockResponse: ReportsResponse = {
+      items: [{ id: '1', title: 'Test Report', report_type: 'ghg_report', reporting_year: 2023, status: 'draft', created_at: '', updated_at: '', is_locked: false, comments: [], revisions: [], company_id: '123' }],
       total: 1,
       page: 1,
-      size: 10,
+      page_size: 10,
+      total_pages: 1,
     };
     mockedApiClient.getReports.mockResolvedValue(mockResponse);
 
