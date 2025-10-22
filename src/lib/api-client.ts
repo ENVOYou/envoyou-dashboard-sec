@@ -46,6 +46,29 @@ import type {
   BulkWorkflowOperationResult,
   WorkflowAttachment,
 } from '../types/workflow';
+import type {
+  AnomalyDetectionRequest,
+  AnomalyReportResponse,
+  AnomalySummaryResponse,
+  AnomalyTrendRequest,
+  AnomalyTrendResponse,
+  BatchAnomalyDetectionRequest,
+  BatchAnomalyDetectionResponse,
+  IndustryBenchmarkRequest,
+  IndustryBenchmarkResponse,
+  AnomalyInvestigationRequest,
+  AnomalyInvestigationResponse,
+  AnomalyDashboardStats,
+  AnomalyAlert,
+  AnomalyDetectionConfiguration,
+  AnomalyFilters,
+  AnomalySearchResult,
+  AnomalyExportRequest,
+  AnomalyReportRequest,
+  AnomalyDetectionResponse,
+  AnomalyDetectionError,
+  DetectedAnomaly,
+} from '../types/anomaly-detection';
 
 // Request/Response types for API methods
 interface Scope1CalculationRequest {
@@ -838,6 +861,125 @@ class APIClient {
     }
 
     return this.request<WorkflowListResponse>(`/workflow/search?${searchParams.toString()}`);
+  }
+
+  // Enhanced Anomaly Detection endpoints
+  async detectAnomalies(data: AnomalyDetectionRequest): Promise<AnomalyReportResponse> {
+    return this.request<AnomalyReportResponse>('/anomaly-detection/detect', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getAnomalySummary(companyId: string, reportingYear: number): Promise<AnomalySummaryResponse> {
+    return this.request<AnomalySummaryResponse>(`/anomaly-detection/summary/${companyId}/${reportingYear}`);
+  }
+
+  async analyzeAnomalyTrends(data: AnomalyTrendRequest): Promise<AnomalyTrendResponse> {
+    return this.request<AnomalyTrendResponse>('/anomaly-detection/trends', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async batchDetectAnomalies(data: BatchAnomalyDetectionRequest): Promise<BatchAnomalyDetectionResponse> {
+    return this.request<BatchAnomalyDetectionResponse>('/anomaly-detection/batch-detect', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async compareIndustryBenchmarks(data: IndustryBenchmarkRequest): Promise<IndustryBenchmarkResponse> {
+    return this.request<IndustryBenchmarkResponse>('/anomaly-detection/industry-benchmark', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async investigateAnomaly(data: AnomalyInvestigationRequest): Promise<AnomalyInvestigationResponse> {
+    return this.request<AnomalyInvestigationResponse>('/anomaly-detection/investigate', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getAnomalyDashboardStats(): Promise<AnomalyDashboardStats> {
+    return this.request<AnomalyDashboardStats>('/anomaly-detection/dashboard/stats');
+  }
+
+  async getAnomalyAlerts(unreadOnly = false): Promise<AnomalyAlert[]> {
+    const params = unreadOnly ? '?unread_only=true' : '';
+    return this.request<AnomalyAlert[]>(`/anomaly-detection/alerts${params}`);
+  }
+
+  async markAnomalyAlertAsRead(alertId: string): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/anomaly-detection/alerts/${alertId}/read`, {
+      method: 'PUT',
+    });
+  }
+
+  async getAnomalyDetectionConfiguration(): Promise<AnomalyDetectionConfiguration> {
+    return this.request<AnomalyDetectionConfiguration>('/anomaly-detection/configuration');
+  }
+
+  async updateAnomalyDetectionConfiguration(data: Partial<AnomalyDetectionConfiguration>): Promise<AnomalyDetectionConfiguration> {
+    return this.request<AnomalyDetectionConfiguration>('/anomaly-detection/configuration', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async searchAnomalies(query: string, filters?: AnomalyFilters): Promise<AnomalySearchResult> {
+    const searchParams = new URLSearchParams({ q: query });
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) {
+          if (Array.isArray(value)) {
+            value.forEach(v => searchParams.append(key, String(v)));
+          } else {
+            searchParams.append(key, String(value));
+          }
+        }
+      });
+    }
+
+    return this.request<AnomalySearchResult>(`/anomaly-detection/search?${searchParams.toString()}`);
+  }
+
+  async exportAnomalies(data: AnomalyExportRequest): Promise<{ download_url: string; expires_at: string }> {
+    return this.request<{ download_url: string; expires_at: string }>('/anomaly-detection/export', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async generateAnomalyReport(data: AnomalyReportRequest): Promise<{ download_url: string; expires_at: string }> {
+    return this.request<{ download_url: string; expires_at: string }>('/anomaly-detection/report', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getAnomalyById(anomalyId: string): Promise<DetectedAnomaly> {
+    return this.request<DetectedAnomaly>(`/anomaly-detection/anomaly/${anomalyId}`);
+  }
+
+  async resolveAnomaly(anomalyId: string, data: {
+    resolution: string;
+    action_taken: string;
+    preventive_measures?: string[];
+  }): Promise<{ success: boolean; resolution_id: string }> {
+    return this.request<{ success: boolean; resolution_id: string }>(`/anomaly-detection/anomaly/${anomalyId}/resolve`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async dismissAnomaly(anomalyId: string, reason: string): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/anomaly-detection/anomaly/${anomalyId}/dismiss`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
   }
 
   // Enhanced Workflow Management endpoints (replacing old basic methods)
