@@ -389,6 +389,13 @@ class APIClient {
     });
   }
 
+  async addComment(reportId: string, content: string): Promise<ReportComment> {
+    return this.request<ReportComment>(`/reports/${reportId}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    });
+  }
+
   // Workflow endpoints
   async getWorkflows(params?: {
     status?: string;
