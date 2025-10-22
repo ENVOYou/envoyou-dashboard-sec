@@ -18,6 +18,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Users,
 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -33,6 +34,7 @@ const navigation = [
   { name: 'Emissions Calculator', href: '/dashboard/emissions', icon: Calculator },
   { name: 'Company Entities', href: '/dashboard/entities', icon: Building2 },
   { name: 'Reports', href: '/dashboard/reports', icon: FileText },
+  { name: 'Workflows', href: '/dashboard/workflow', icon: FileText },
   { name: 'Calculation History', href: '/dashboard/calculations', icon: History },
   { name: 'Audit Trail', href: '/dashboard/audit', icon: Search },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },

@@ -1,4 +1,4 @@
-import { APIError, AuthResponse, LoginRequest, RegisterRequest, EmissionCalculation, CalculationResponse, CompanyEntity, Report, Workflow, Consolidation, EPAFactor } from '../types/api';
+import { APIError, AuthResponse, LoginRequest, RegisterRequest, EmissionCalculation, CalculationResponse, CompanyEntity, Report, Consolidation, EPAFactor } from '../types/api';
 import type { User } from '../types/api';
 import type {
   Report as EnhancedReport,
@@ -24,6 +24,28 @@ import type {
   BulkReportOperation,
   BulkOperationResult,
 } from '../types/reports';
+import type {
+  Workflow,
+  WorkflowSummary,
+  WorkflowCreate,
+  WorkflowUpdate,
+  WorkflowFilters,
+  WorkflowListResponse,
+  WorkflowDashboardStats,
+  WorkflowActivity,
+  WorkflowApprover,
+  WorkflowStage,
+  ApprovalRequest,
+  ApprovalResponse,
+  WorkflowNotification,
+  WorkflowComment,
+  WorkflowCommentCreate,
+  WorkflowTemplate,
+  WorkflowConfiguration,
+  BulkWorkflowOperation,
+  BulkWorkflowOperationResult,
+  WorkflowAttachment,
+} from '../types/workflow';
 
 // Request/Response types for API methods
 interface Scope1CalculationRequest {
@@ -96,8 +118,9 @@ interface LockUnlockRequest {
 }
 
 interface WorkflowStatusUpdate {
-  status: 'draft' | 'pending' | 'in_progress' | 'completed' | 'rejected';
-  notes?: string;
+  status: 'draft' | 'pending' | 'in_progress' | 'completed' | 'rejected' | 'cancelled';
+  reason?: string;
+  comments?: string;
 }
 
 interface PasswordChangeRequest {
@@ -570,38 +593,254 @@ class APIClient {
     });
   }
 
-  // Workflow endpoints
-  async getWorkflows(params?: {
-    status?: string;
-    limit?: number;
-    offset?: number;
-  }) {
+  // Enhanced Workflow Management endpoints
+  async getWorkflows(filters?: WorkflowFilters): Promise<WorkflowListResponse> {
     const searchParams = new URLSearchParams();
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined) {
-          searchParams.append(key, String(value));
+          if (Array.isArray(value)) {
+            value.forEach(v => searchParams.append(key, String(v)));
+          } else {
+            searchParams.append(key, String(value));
+          }
         }
       });
     }
 
     const query = searchParams.toString();
-    return this.request(`/workflow${query ? `?${query}` : ''}`);
+    return this.request<WorkflowListResponse>(`/workflow${query ? `?${query}` : ''}`);
   }
 
-  async createWorkflow(data: WorkflowRequest): Promise<Workflow> {
+  async getWorkflow(workflowId: string): Promise<Workflow> {
+    return this.request<Workflow>(`/workflow/${workflowId}`);
+  }
+
+  async createWorkflow(data: WorkflowCreate): Promise<Workflow> {
+    const formData = new FormData();
+    formData.append('title', data.title);
+    formData.append('workflow_type', data.workflow_type);
+    formData.append('priority', data.priority);
+    if (data.description) formData.append('description', data.description);
+    if (data.due_date) formData.append('due_date', data.due_date);
+    if (data.assigned_users) formData.append('assigned_users', JSON.stringify(data.assigned_users));
+    if (data.stages) formData.append('stages', JSON.stringify(data.stages));
+    if (data.metadata) formData.append('metadata', JSON.stringify(data.metadata));
+    if (data.attachments) {
+      data.attachments.forEach((file, index) => {
+        formData.append(`attachment_${index}`, file);
+      });
+    }
+
     return this.request<Workflow>('/workflow', {
+      method: 'POST',
+      body: formData,
+      headers: {},
+    });
+  }
+
+  async updateWorkflow(workflowId: string, data: WorkflowUpdate): Promise<Workflow> {
+    return this.request<Workflow>(`/workflow/${workflowId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteWorkflow(workflowId: string): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/workflow/${workflowId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async submitWorkflow(workflowId: string): Promise<{
+    message: string;
+    workflow_id: string;
+    status: string;
+    next_approvers: string[];
+    submitted_at: string;
+  }> {
+    return this.request(`/workflow/${workflowId}/submit`, {
+      method: 'POST',
+    });
+  }
+
+  async approveWorkflow(workflowId: string, data: ApprovalRequest): Promise<ApprovalResponse> {
+    const formData = new FormData();
+    formData.append('decision', data.decision);
+    if (data.comments) formData.append('comments', data.comments);
+    if (data.escalation_reason) formData.append('escalation_reason', data.escalation_reason);
+    if (data.attachments) {
+      data.attachments.forEach((file, index) => {
+        formData.append(`attachment_${index}`, file);
+      });
+    }
+
+    return this.request<ApprovalResponse>(`/workflow/${workflowId}/approve`, {
+      method: 'POST',
+      body: formData,
+      headers: {},
+    });
+  }
+
+  async updateWorkflowStatus(workflowId: string, data: WorkflowStatusUpdate): Promise<{
+    message: string;
+    workflow_id: string;
+    previous_status: string;
+    new_status: string;
+    updated_by: string;
+    updated_at: string;
+  }> {
+    return this.request(`/workflow/${workflowId}/status`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getWorkflowApprovers(workflowId: string): Promise<WorkflowApprover[]> {
+    return this.request<WorkflowApprover[]>(`/workflow/${workflowId}/approvers`);
+  }
+
+  async getWorkflowStages(workflowId: string): Promise<WorkflowStage[]> {
+    return this.request<WorkflowStage[]>(`/workflow/${workflowId}/stages`);
+  }
+
+  async getPendingApprovals(): Promise<{
+    total_pending: number;
+    workflows: WorkflowSummary[];
+  }> {
+    return this.request('/workflow/pending-approvals');
+  }
+
+  async escalateWorkflow(workflowId: string, data: {
+    reason: string;
+    priority_increase?: string;
+  }): Promise<{
+    message: string;
+    workflow_id: string;
+    new_priority: string;
+    escalated_at: string;
+    escalation_reason: string;
+  }> {
+    return this.request(`/workflow/${workflowId}/escalate`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async updateWorkflowStatus(workflowId: string, data: WorkflowStatusUpdate): Promise<Workflow> {
-    return this.request<Workflow>(`/workflow/${workflowId}/status`, {
+  async getWorkflowApprovals(workflowId: string): Promise<{
+    workflow_id: string;
+    total_approvals: number;
+    approvals: Array<{
+      stage: number;
+      approver_id: string;
+      approver_name?: string;
+      decision: string;
+      comments?: string;
+      approved_at: string;
+      attachments?: WorkflowAttachment[];
+    }>;
+  }> {
+    return this.request(`/workflow/${workflowId}/approvals`);
+  }
+
+  // Workflow Comments
+  async addCommentToWorkflow(workflowId: string, data: WorkflowCommentCreate): Promise<WorkflowComment> {
+    const formData = new FormData();
+    formData.append('content', data.content);
+    formData.append('comment_type', data.comment_type || 'comment');
+    formData.append('is_internal', String(data.is_internal || false));
+    if (data.stage) formData.append('stage', String(data.stage));
+    if (data.attachments) {
+      data.attachments.forEach((file, index) => {
+        formData.append(`attachment_${index}`, file);
+      });
+    }
+
+    return this.request<WorkflowComment>(`/workflow/${workflowId}/comments`, {
+      method: 'POST',
+      body: formData,
+      headers: {},
+    });
+  }
+
+  async getWorkflowComments(workflowId: string, stage?: number): Promise<WorkflowComment[]> {
+    const params = stage ? `?stage=${stage}` : '';
+    return this.request<WorkflowComment[]>(`/workflow/${workflowId}/comments${params}`);
+  }
+
+  // Dashboard and Analytics
+  async getWorkflowDashboardStats(): Promise<WorkflowDashboardStats> {
+    return this.request<WorkflowDashboardStats>('/workflow/dashboard/stats');
+  }
+
+  async getWorkflowActivity(workflowId?: string, limit = 20): Promise<WorkflowActivity[]> {
+    const params = workflowId ? `?workflow_id=${workflowId}&limit=${limit}` : `?limit=${limit}`;
+    return this.request<WorkflowActivity[]>(`/workflow/activity${params}`);
+  }
+
+  // Notifications
+  async getWorkflowNotifications(unreadOnly = false): Promise<WorkflowNotification[]> {
+    const params = unreadOnly ? '?unread_only=true' : '';
+    return this.request<WorkflowNotification[]>(`/workflow/notifications${params}`);
+  }
+
+  async markWorkflowNotificationAsRead(notificationId: string): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/workflow/notifications/${notificationId}/read`, {
+      method: 'PUT',
+    });
+  }
+
+  // Templates
+  async getWorkflowTemplates(): Promise<WorkflowTemplate[]> {
+    return this.request<WorkflowTemplate[]>('/workflow/templates');
+  }
+
+  async createWorkflowFromTemplate(templateId: string, data: Partial<WorkflowCreate>): Promise<Workflow> {
+    return this.request<Workflow>('/workflow/from-template', {
+      method: 'POST',
+      body: JSON.stringify({ template_id: templateId, ...data }),
+    });
+  }
+
+  // Configuration
+  async getWorkflowConfiguration(): Promise<WorkflowConfiguration> {
+    return this.request<WorkflowConfiguration>('/workflow/configuration');
+  }
+
+  async updateWorkflowConfiguration(data: Partial<WorkflowConfiguration>): Promise<WorkflowConfiguration> {
+    return this.request<WorkflowConfiguration>('/workflow/configuration', {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
+
+  // Bulk Operations
+  async bulkWorkflowOperation(data: BulkWorkflowOperation): Promise<BulkWorkflowOperationResult> {
+    return this.request<BulkWorkflowOperationResult>('/workflow/bulk', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Search
+  async searchWorkflows(query: string, filters?: WorkflowFilters): Promise<WorkflowListResponse> {
+    const searchParams = new URLSearchParams({ q: query });
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) {
+          if (Array.isArray(value)) {
+            value.forEach(v => searchParams.append(key, String(v)));
+          } else {
+            searchParams.append(key, String(value));
+          }
+        }
+      });
+    }
+
+    return this.request<WorkflowListResponse>(`/workflow/search?${searchParams.toString()}`);
+  }
+
+  // Enhanced Workflow Management endpoints (replacing old basic methods)
 
   // Consolidation endpoints
   async getCompanyConsolidations(companyId: string, year?: number) {
