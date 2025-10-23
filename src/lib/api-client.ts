@@ -1,4 +1,4 @@
-import { APIError, AuthResponse, LoginRequest, RegisterRequest, EmissionCalculation, CalculationResponse, CompanyEntity, Report, Consolidation, EPAFactor } from '../types/api';
+import { APIError, AuthResponse, LoginRequest, RegisterRequest, EmissionCalculation, CalculationResponse, CompanyEntity, Report, Consolidation } from '../types/api';
 import type { User } from '../types/api';
 import type {
   Report as EnhancedReport,
@@ -90,6 +90,31 @@ import type {
   AuditLogsResponse,
   AuditError,
 } from '../types/audit';
+import type {
+  EPAFactor,
+  EPACacheStatus,
+  EPARefreshRequest,
+  EPARefreshResponse,
+  GHGRPFacility,
+  GHGRPSearchRequest,
+  GHGRPSearchResponse,
+  EPAReportingRequirement,
+  EPAReportingSchedule,
+  EPAReportingSubmission,
+  ValidationResult,
+  EPADataAnalytics,
+  EPAIntegrationConfig,
+  EPADataImportRequest,
+  EPADataImportResponse,
+  EPAComplianceStatus,
+  ComplianceViolation,
+  EPADashboardStats,
+  EPAActivity,
+  EPAFilters,
+  EPASearchResult,
+  EPADataResponse,
+  EPAError,
+} from '../types/epa-integration';
 
 // Request/Response types for API methods
 interface Scope1CalculationRequest {
@@ -383,6 +408,27 @@ class APIClient {
     });
   }
 
+  async calculateScope3(data: {
+    calculation_name: string;
+    company_id: string;
+    reporting_period_start: string;
+    reporting_period_end: string;
+    categories: Array<{
+      category: string;
+      activity_type: string;
+      quantity: number;
+      unit: string;
+      emission_factor: number;
+      data_quality: string;
+      description?: string;
+    }>;
+  }): Promise<EmissionCalculation> {
+    return this.request<EmissionCalculation>('/emissions/calculate/scope3', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
   async getEmissionsCalculations(params?: {
     company_id?: string;
     status?: string;
@@ -405,6 +451,131 @@ class APIClient {
   async getCompanyEmissionsSummary(companyId: string, year?: number) {
     const params = year ? `?reporting_year=${year}` : '';
     return this.request(`/emissions/companies/${companyId}/summary${params}`);
+  }
+
+  async getEmissionsCalculation(calculationId: string) {
+    return this.request(`/emissions/calculations/${calculationId}`);
+  }
+
+  async getEmissionsValidation(params?: {
+    calculation_id?: string;
+    company_id?: string;
+    validation_types?: string[];
+  }) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          if (Array.isArray(value)) {
+            value.forEach(v => searchParams.append(key, String(v)));
+          } else {
+            searchParams.append(key, String(value));
+          }
+        }
+      });
+    }
+    const query = searchParams.toString();
+    return this.request(`/emissions/validation${query ? `?${query}` : ''}`);
+  }
+
+  async getEmissionsAnalytics(params?: {
+    company_id?: string;
+    date_from?: string;
+    date_to?: string;
+    scope?: string[];
+    aggregation?: string;
+  }) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          if (Array.isArray(value)) {
+            value.forEach(v => searchParams.append(key, String(v)));
+          } else {
+            searchParams.append(key, String(value));
+          }
+        }
+      });
+    }
+    const query = searchParams.toString();
+    return this.request(`/emissions/analytics${query ? `?${query}` : ''}`);
+  }
+
+  async getEmissionsTrends(params?: {
+    company_id?: string;
+    date_from?: string;
+    date_to?: string;
+    scope?: string[];
+    comparison_period?: string;
+  }) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          if (Array.isArray(value)) {
+            value.forEach(v => searchParams.append(key, String(v)));
+          } else {
+            searchParams.append(key, String(value));
+          }
+        }
+      });
+    }
+    const query = searchParams.toString();
+    return this.request(`/emissions/trends${query ? `?${query}` : ''}`);
+  }
+
+  async getIndustryBenchmarks(params?: {
+    industry?: string;
+    company_size?: string;
+    region?: string;
+    scope?: string[];
+  }) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          if (Array.isArray(value)) {
+            value.forEach(v => searchParams.append(key, String(v)));
+          } else {
+            searchParams.append(key, String(value));
+          }
+        }
+      });
+    }
+    const query = searchParams.toString();
+    return this.request(`/emissions/benchmarks${query ? `?${query}` : ''}`);
+  }
+
+  async importEmissionsData(file: File, options?: {
+    company_id?: string;
+    data_format?: string;
+    overwrite_existing?: boolean;
+  }) {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (options?.company_id) formData.append('company_id', options.company_id);
+    if (options?.data_format) formData.append('data_format', options.data_format);
+    if (options?.overwrite_existing) formData.append('overwrite_existing', 'true');
+
+    return this.request('/emissions/import', {
+      method: 'POST',
+      body: formData,
+      headers: {},
+    });
+  }
+
+  async exportEmissionsData(data: {
+    format: 'csv' | 'excel' | 'json';
+    company_id?: string;
+    date_from?: string;
+    date_to?: string;
+    scope?: string[];
+    include_validation?: boolean;
+  }) {
+    return this.request('/emissions/export', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   }
 
   // Company Entities endpoints
@@ -1222,56 +1393,105 @@ class APIClient {
 
   // Enhanced Workflow Management endpoints (replacing old basic methods)
 
-  // Consolidation endpoints
-  async getCompanyConsolidations(companyId: string, year?: number) {
-    const params = year ? `?reporting_year=${year}` : '';
-    return this.request(`/consolidation/company/${companyId}${params}`);
+  // EPA Integration endpoints
+  async getEPACacheStatus(): Promise<EPACacheStatus> {
+    return this.request<EPACacheStatus>('/epa/cache/status');
   }
 
-  async createConsolidation(data: ConsolidationRequest): Promise<Consolidation> {
-    return this.request<Consolidation>('/consolidation', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async approveConsolidation(consolidationId: string, data: { approved_by: string; notes?: string }): Promise<Consolidation> {
-    return this.request<Consolidation>(`/consolidation/${consolidationId}/approve`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  }
-
-  // EPA Data endpoints
-  async refreshEPAData(data?: { force_refresh?: boolean; sources?: string[] }): Promise<{ message: string; updated_count: number }> {
-    return this.request<{ message: string; updated_count: number }>('/epa/refresh', {
+  async refreshEPAData(data?: EPARefreshRequest): Promise<EPARefreshResponse> {
+    return this.request<EPARefreshResponse>('/epa/refresh', {
       method: 'POST',
       body: JSON.stringify(data || {}),
     });
   }
 
-  async getEPACacheStatus() {
-    return this.request('/epa/cache/status');
+  async searchGHGRPFacilities(data: GHGRPSearchRequest): Promise<GHGRPSearchResponse> {
+    return this.request<GHGRPSearchResponse>('/epa/ghgrp/search', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   }
 
-  // Audit endpoints
-  async getAuditLogs(params?: {
-    limit?: number;
-    offset?: number;
-    event_type?: string;
-    user_id?: string;
-  }) {
-    const searchParams = new URLSearchParams();
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined) {
-          searchParams.append(key, String(value));
-        }
+  async getGHGRPFacility(facilityId: string): Promise<GHGRPFacility> {
+    return this.request<GHGRPFacility>(`/epa/ghgrp/facility/${facilityId}`);
+  }
+
+  async getEPADashboardStats(): Promise<EPADashboardStats> {
+    return this.request<EPADashboardStats>('/epa/dashboard/stats');
+  }
+
+  async getEPAReportingSchedule(companyId?: string): Promise<EPAReportingSchedule[]> {
+    const params = companyId ? `?company_id=${companyId}` : '';
+    return this.request<EPAReportingSchedule[]>(`/epa/reporting/schedule${params}`);
+  }
+
+  async createEPAReportingSubmission(data: {
+    schedule_id: string;
+    submission_data: Record<string, any>;
+    attachments?: File[];
+  }): Promise<EPAReportingSubmission> {
+    const formData = new FormData();
+    formData.append('schedule_id', data.schedule_id);
+    formData.append('submission_data', JSON.stringify(data.submission_data));
+    if (data.attachments) {
+      data.attachments.forEach((file, index) => {
+        formData.append(`attachment_${index}`, file);
       });
     }
 
-    const query = searchParams.toString();
-    return this.request(`/audit/logs${query ? `?${query}` : ''}`);
+    return this.request<EPAReportingSubmission>('/epa/reporting/submit', {
+      method: 'POST',
+      body: formData,
+      headers: {},
+    });
+  }
+
+  async getEPAComplianceStatus(companyId: string): Promise<EPAComplianceStatus> {
+    return this.request<EPAComplianceStatus>(`/epa/compliance/${companyId}`);
+  }
+
+  async importEPAData(data: EPADataImportRequest): Promise<EPADataImportResponse> {
+    const formData = new FormData();
+    formData.append('source', data.source);
+    if (data.file) formData.append('file', data.file);
+    if (data.api_endpoint) formData.append('api_endpoint', data.api_endpoint);
+    if (data.parameters) formData.append('parameters', JSON.stringify(data.parameters));
+    if (data.mapping_rules) formData.append('mapping_rules', JSON.stringify(data.mapping_rules));
+    if (data.validation_rules) formData.append('validation_rules', JSON.stringify(data.validation_rules));
+    if (data.overwrite_existing) formData.append('overwrite_existing', 'true');
+
+    return this.request<EPADataImportResponse>('/epa/import', {
+      method: 'POST',
+      body: formData,
+      headers: {},
+    });
+  }
+
+  async exportEPAData(data: {
+    format: 'csv' | 'excel' | 'json';
+    facilities?: string[];
+    date_range?: { start: string; end: string };
+    include_emissions?: boolean;
+  }): Promise<{ download_url: string; expires_at: string }> {
+    return this.request<{ download_url: string; expires_at: string }>('/epa/export', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getEPAReportingRequirements(): Promise<EPAReportingRequirement[]> {
+    return this.request<EPAReportingRequirement[]>('/epa/reporting/requirements');
+  }
+
+  async getEPAIntegrationConfig(): Promise<EPAIntegrationConfig> {
+    return this.request<EPAIntegrationConfig>('/epa/configuration');
+  }
+
+  async updateEPAIntegrationConfig(data: Partial<EPAIntegrationConfig>): Promise<EPAIntegrationConfig> {
+    return this.request<EPAIntegrationConfig>('/epa/configuration', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
   }
 }
 

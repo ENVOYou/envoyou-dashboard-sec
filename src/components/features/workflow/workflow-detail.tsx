@@ -31,6 +31,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { WorkflowComments } from './workflow-comments';
+import { WorkflowHistory } from './workflow-history';
 import type { Workflow, ApprovalRequest } from '@/types/workflow';
 
 interface WorkflowDetailProps {
@@ -452,25 +454,11 @@ export const WorkflowDetail: React.FC<WorkflowDetailProps> = ({
         </TabsContent>
 
         <TabsContent value="comments">
-          <EnhancedCard>
-            <EnhancedCardHeader title="Comments & Discussion" />
-            <EnhancedCardContent>
-              <div className="text-center py-8 text-gray-500">
-                Comments system will be implemented here
-              </div>
-            </EnhancedCardContent>
-          </EnhancedCard>
+          <WorkflowComments workflowId={workflowId} />
         </TabsContent>
 
         <TabsContent value="history">
-          <EnhancedCard>
-            <EnhancedCardHeader title="Approval History" />
-            <EnhancedCardContent>
-              <div className="text-center py-8 text-gray-500">
-                Approval history will be implemented here
-              </div>
-            </EnhancedCardContent>
-          </EnhancedCard>
+          <WorkflowHistory workflowId={workflowId} />
         </TabsContent>
       </Tabs>
     </div>

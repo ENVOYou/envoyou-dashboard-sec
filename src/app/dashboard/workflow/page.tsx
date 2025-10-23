@@ -6,31 +6,49 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { WorkflowList } from '@/components/features/workflow/workflow-list';
+import { CreateWorkflowModal } from '@/components/features/workflow/create-workflow-modal';
 import type { Workflow } from '@/types/workflow';
 
 export default function WorkflowPage() {
-  const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null);
+  const router = useRouter();
   const [showPendingOnly, setShowPendingOnly] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const handleWorkflowSelect = (workflow: Workflow) => {
-    setSelectedWorkflow(workflow);
-    // TODO: Navigate to workflow detail page or open modal
-    console.log('Selected workflow:', workflow);
+    // Navigate to individual workflow detail page
+    router.push(`/dashboard/workflow/${workflow.id}`);
   };
 
   const handleCreateWorkflow = () => {
-    // TODO: Open create workflow modal or navigate to create page
-    console.log('Create new workflow');
+    setShowCreateModal(true);
+  };
+
+  const handleCreateSuccess = (workflowId: string) => {
+    setShowCreateModal(false);
+    router.push(`/dashboard/workflow/${workflowId}`);
+  };
+
+  const handleCreateClose = () => {
+    setShowCreateModal(false);
   };
 
   return (
-    <div className="container mx-auto py-6">
-      <WorkflowList
-        onWorkflowSelect={handleWorkflowSelect}
-        onCreateWorkflow={handleCreateWorkflow}
-        showPendingOnly={showPendingOnly}
+    <>
+      <div className="container mx-auto py-6">
+        <WorkflowList
+          onWorkflowSelect={handleWorkflowSelect}
+          onCreateWorkflow={handleCreateWorkflow}
+          showPendingOnly={showPendingOnly}
+        />
+      </div>
+
+      <CreateWorkflowModal
+        open={showCreateModal}
+        onClose={handleCreateClose}
+        onSuccess={handleCreateSuccess}
       />
-    </div>
+    </>
   );
 }

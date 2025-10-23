@@ -6,29 +6,47 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ReportsList } from '@/components/features/reports/reports-list';
+import { CreateReportModal } from '@/components/features/reports/create-report-modal';
 import type { Report } from '@/types/reports';
 
 export default function ReportsPage() {
-  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const router = useRouter();
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const handleReportSelect = (report: Report) => {
-    setSelectedReport(report);
-    // TODO: Navigate to report detail page or open modal
-    console.log('Selected report:', report);
+    // Navigate to individual report detail page
+    router.push(`/dashboard/reports/${report.id}`);
   };
 
   const handleCreateReport = () => {
-    // TODO: Open create report modal or navigate to create page
-    console.log('Create new report');
+    setShowCreateModal(true);
+  };
+
+  const handleCreateSuccess = (reportId: string) => {
+    setShowCreateModal(false);
+    router.push(`/dashboard/reports/${reportId}`);
+  };
+
+  const handleCreateClose = () => {
+    setShowCreateModal(false);
   };
 
   return (
-    <div className="container mx-auto py-6">
-      <ReportsList
-        onReportSelect={handleReportSelect}
-        onCreateReport={handleCreateReport}
+    <>
+      <div className="container mx-auto py-6">
+        <ReportsList
+          onReportSelect={handleReportSelect}
+          onCreateReport={handleCreateReport}
+        />
+      </div>
+
+      <CreateReportModal
+        open={showCreateModal}
+        onClose={handleCreateClose}
+        onSuccess={handleCreateSuccess}
       />
-    </div>
+    </>
   );
 }

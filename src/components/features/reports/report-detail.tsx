@@ -33,6 +33,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { ReportComments } from './report-comments';
+import { ReportRevisions } from './report-revisions';
+import { ReportActivity } from './report-activity';
 import type { Report, LockReportRequest, UnlockReportRequest } from '@/types/reports';
 
 interface ReportDetailProps {
@@ -347,36 +350,15 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({
         </TabsContent>
 
         <TabsContent value="comments">
-          <EnhancedCard>
-            <EnhancedCardHeader title="Comments & Discussion" />
-            <EnhancedCardContent>
-              <div className="text-center py-8 text-gray-500">
-                Comments system will be implemented here
-              </div>
-            </EnhancedCardContent>
-          </EnhancedCard>
+          <ReportComments reportId={reportId} />
         </TabsContent>
 
         <TabsContent value="revisions">
-          <EnhancedCard>
-            <EnhancedCardHeader title="Revision History" />
-            <EnhancedCardContent>
-              <div className="text-center py-8 text-gray-500">
-                Revision tracking will be implemented here
-              </div>
-            </EnhancedCardContent>
-          </EnhancedCard>
+          <ReportRevisions reportId={reportId} />
         </TabsContent>
 
         <TabsContent value="activity">
-          <EnhancedCard>
-            <EnhancedCardHeader title="Recent Activity" />
-            <EnhancedCardContent>
-              <div className="text-center py-8 text-gray-500">
-                Activity feed will be implemented here
-              </div>
-            </EnhancedCardContent>
-          </EnhancedCard>
+          <ReportActivity reportId={reportId} />
         </TabsContent>
       </Tabs>
     </div>
