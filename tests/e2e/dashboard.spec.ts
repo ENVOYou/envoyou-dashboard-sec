@@ -7,8 +7,8 @@ test.describe('Dashboard', () => {
       window.localStorage.setItem('auth_token', 'mock-jwt-token');
       window.localStorage.setItem('user', JSON.stringify({
         id: '1',
-        email: 'test@example.com',
-        full_name: 'Test User',
+        email: 'Admin@example.com',
+        full_name: 'Admin User',
         role: 'admin'
       }));
     });

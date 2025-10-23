@@ -24,8 +24,8 @@ test.describe('Authentication', () => {
     await page.goto('/login');
 
     // Fill login form
-    await page.fill('input[type="email"]', 'test@example.com');
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[type="email"]', 'admin@example.com');
+    await page.fill('input[type="password"]', 'AdminPass123!');
 
     // Mock successful login response
     await page.route('**/auth/login', async route => {
@@ -37,8 +37,8 @@ test.describe('Authentication', () => {
           token_type: 'bearer',
           user: {
             id: '1',
-            email: 'test@example.com',
-            full_name: 'Test User',
+            email: 'admin@example.com',
+            full_name: 'Admin User',
             role: 'admin'
           }
         })
@@ -80,8 +80,8 @@ test.describe('Authentication', () => {
       window.localStorage.setItem('auth_token', 'mock-jwt-token');
       window.localStorage.setItem('user', JSON.stringify({
         id: '1',
-        email: 'test@example.com',
-        full_name: 'Test User',
+        email: 'admin@example.com',
+        full_name: 'Admin User',
         role: 'admin'
       }));
     });

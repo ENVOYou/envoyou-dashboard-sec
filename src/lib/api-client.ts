@@ -241,8 +241,8 @@ class APIClient {
     const isRegisterEndpoint = endpoint === '/auth/register';
     const isRefreshEndpoint = endpoint === '/auth/refresh';
 
-    // Public auth endpoints (login, register, refresh) use Basic Auth in staging
-    if (isLoginEndpoint || isRegisterEndpoint || isRefreshEndpoint) {
+    // Public auth endpoints (register, refresh) use Basic Auth in staging
+    if (isRegisterEndpoint || isRefreshEndpoint) {
       // Add Basic Auth header for staging environments
       const basicAuth = this.getBasicAuthHeader();
       if (basicAuth) {

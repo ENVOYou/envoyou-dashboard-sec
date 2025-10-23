@@ -17,7 +17,7 @@ import {
   AlertCircle,
   Save,
   X,
-  Template,
+  File,
   Users,
   Clock,
 } from 'lucide-react';
@@ -44,17 +44,19 @@ import type { CreateReportRequest } from '@/types/reports';
 
 const reportCreateSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be less than 200 characters'),
-  report_type: z.enum(['sec_10k', 'ghg_report', 'sustainability_report', 'esg_report'], {
-    required_error: 'Please select a report type',
-  }),
+  report_type: z.enum(['sec_10k', 'ghg_report', 'sustainability_report', 'esg_report']),
   company_id: z.string().min(1, 'Company selection is required'),
-  reporting_year: z.number({
-    required_error: 'Reporting year is required',
-  }).min(2020, 'Reporting year must be 2020 or later').max(2030, 'Reporting year cannot be later than 2030'),
+  reporting_year: z.number().min(2020, 'Reporting year must be 2020 or later').max(2030, 'Reporting year cannot be later than 2030'),
   description: z.string().max(1000, 'Description must be less than 1000 characters').optional(),
   tags: z.string().optional(),
-  priority: z.enum(['low', 'medium', 'high', 'urgent']).default('medium'),
+  priority: z.enum(['low', 'medium', 'high', 'urgent']),
   due_date: z.string().optional(),
+}).refine((data) => data.report_type !== undefined, {
+  message: 'Please select a report type',
+  path: ['report_type'],
+}).refine((data) => data.reporting_year !== undefined, {
+  message: 'Reporting year is required',
+  path: ['reporting_year'],
 });
 
 type ReportCreateFormData = z.infer<typeof reportCreateSchema>;
@@ -369,7 +371,7 @@ export const ReportCreateForm: React.FC<ReportCreateFormProps> = ({
                       className="w-full justify-start"
                       onClick={() => handleTemplateSelect('sec_standard')}
                     >
-                      <Template className="mr-2 h-4 w-4" />
+                      <File className="mr-2 h-4 w-4" />
                       SEC Standard
                     </Button>
 
@@ -379,7 +381,7 @@ export const ReportCreateForm: React.FC<ReportCreateFormProps> = ({
                       className="w-full justify-start"
                       onClick={() => handleTemplateSelect('ghg_comprehensive')}
                     >
-                      <Template className="mr-2 h-4 w-4" />
+                      <File className="mr-2 h-4 w-4" />
                       GHG Comprehensive
                     </Button>
                   </div>
@@ -412,7 +414,7 @@ export const ReportCreateForm: React.FC<ReportCreateFormProps> = ({
                       console.log('Browse templates');
                     }}
                   >
-                    <Template className="mr-2 h-4 w-4" />
+                    <File className="mr-2 h-4 w-4" />
                     Browse Templates
                   </Button>
                 </EnhancedCardContent>

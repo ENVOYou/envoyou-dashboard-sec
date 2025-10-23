@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -14,20 +14,33 @@ export default function LoginPage() {
     email: '',
     password: '',
   });
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isStaging, setIsStaging] = useState(false);
 
   const router = useRouter();
   const { login } = useAuthStore();
   const { executeRecaptcha, isLoaded: recaptchaLoaded } = useRecaptcha();
 
+  useEffect(() => {
+    // Check for staging environment
+    if (typeof window !== 'undefined') {
+      const staging = localStorage.getItem('staging_env') === 'true';
+      setIsStaging(staging);
+      console.log('LoginPage - Staging environment detected:', staging);
+    }
+  }, []);
+
   const loginMutation = useMutation({
     mutationFn: async (data: LoginRequest) => {
-      console.log('Attempting login to:', apiClient['baseURL']);
+      console.log('LoginPage - Attempting login to:', apiClient['baseURL']);
+      console.log('LoginPage - Login data:', data);
       const response = await apiClient.login(data);
-      console.log('Login response:', response);
+      console.log('LoginPage - Login response:', response);
       return response;
     },
     onSuccess: async (data: AuthResponse) => {
       console.log('Login successful, response data:', data);
+      setErrorMessage(''); // Clear error on success
 
       // Backend returns user_id and role instead of full user object
       // We need to construct the user object or fetch it
@@ -61,7 +74,7 @@ export default function LoginPage() {
 
       if (!userData) {
         console.error('No user data available');
-        alert('Login failed: User data not available');
+        setErrorMessage('Login failed: User data not available');
         return;
       }
 
@@ -75,29 +88,31 @@ export default function LoginPage() {
       }
       login(userData, data.access_token);
       console.log('Auth store updated, redirecting to dashboard...');
-      router.push('/dashboard');
+      window.location.href = '/dashboard';
     },
     onError: (error: Error) => {
       console.error('Login failed:', error);
-      alert(error.message || 'Login failed. Please check your credentials.');
+      setErrorMessage(error.message || 'Login failed. Please check your credentials.');
     },
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('LoginPage - Form submitted with data:', formData);
+    setErrorMessage(''); // Clear previous errors
 
     // Only check reCAPTCHA if it's enabled
     const isRecaptchaEnabled = process.env.NEXT_PUBLIC_RECAPTCHA_ENABLED === 'true';
 
     if (isRecaptchaEnabled) {
       if (!recaptchaLoaded) {
-        alert('reCAPTCHA is still loading. Please try again.');
+        setErrorMessage('reCAPTCHA is still loading. Please try again.');
         return;
       }
 
       const token = await executeRecaptcha('login');
       if (!token) {
-        alert('reCAPTCHA verification failed. Please try again.');
+        setErrorMessage('reCAPTCHA verification failed. Please try again.');
         return;
       }
 
@@ -118,6 +133,13 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold text-gray-900">EnvoYou</h1>
           <span className="ml-2 text-sm text-gray-500 self-end">SEC Dashboard</span>
         </div>
+        {isStaging && (
+          <div className="mt-4 text-center">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+              Staging Environment
+            </span>
+          </div>
+        )}
         <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
           Sign in to your account
         </h2>
@@ -134,6 +156,11 @@ export default function LoginPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {errorMessage && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {errorMessage}
+            </div>
+          )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
