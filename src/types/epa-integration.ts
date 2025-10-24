@@ -20,7 +20,7 @@ export interface EPAFactor {
   expiry_date?: string;
   last_updated: string;
   is_active: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface EPACacheStatus {
@@ -181,7 +181,7 @@ export interface EPAReportingSubmission {
   company_id: string;
   report_type: string;
   reporting_year: number;
-  submission_data: Record<string, any>;
+  submission_data: Record<string, unknown>;
   submitted_by: string;
   submitted_by_name?: string;
   submitted_at: string;
@@ -286,7 +286,7 @@ export interface EPADataImportRequest {
   source: 'ghgrp' | 'egrid' | 'tri' | 'custom';
   file?: File;
   api_endpoint?: string;
-  parameters?: Record<string, any>;
+  parameters?: Record<string, unknown>;
   mapping_rules?: DataMappingRule[];
   validation_rules?: ValidationRule[];
   overwrite_existing?: boolean;
@@ -296,14 +296,14 @@ export interface DataMappingRule {
   source_field: string;
   target_field: string;
   transformation?: 'none' | 'convert_units' | 'normalize' | 'custom';
-  default_value?: any;
+  default_value?: string | number | boolean | null;
   required: boolean;
 }
 
 export interface ValidationRule {
   field: string;
   rule_type: 'required' | 'range' | 'format' | 'reference' | 'custom';
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   error_message: string;
 }
 
@@ -403,7 +403,7 @@ export interface EPAActivity {
   company_id?: string;
   company_name?: string;
   timestamp: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   impact_level: 'low' | 'medium' | 'high';
 }
 
@@ -457,7 +457,7 @@ export interface EPADataResponse {
 export interface EPAError {
   code: string;
   message: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   suggested_actions?: string[];
 }
 

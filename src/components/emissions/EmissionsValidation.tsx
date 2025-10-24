@@ -219,7 +219,7 @@ export const EmissionsValidation: React.FC<EmissionsValidationProps> = ({
     },
   ];
 
-  const results = validationData?.results || mockValidationResults;
+  const results = (validationData && typeof validationData === 'object' && 'results' in validationData) ? validationData.results as ValidationResult[] : mockValidationResults;
 
   const filteredResults = activeTab === 'all'
     ? results

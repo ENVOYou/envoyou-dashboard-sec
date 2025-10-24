@@ -208,7 +208,7 @@ export const Scope3Calculator: React.FC<Scope3CalculatorProps> = ({ className })
   const addCategory = () => {
     if (selectedCategory) {
       append({
-        category: selectedCategory as any,
+        category: selectedCategory as 'purchased_goods' | 'capital_goods' | 'fuel_energy' | 'transportation' | 'waste' | 'business_travel' | 'employee_commuting' | 'leased_assets' | 'franchises' | 'investments' | 'other',
         activity_type: activityTypes[selectedCategory as keyof typeof activityTypes]?.[0] || '',
         quantity: 0,
         unit: 'metric tons',
@@ -365,7 +365,7 @@ export const Scope3Calculator: React.FC<Scope3CalculatorProps> = ({ className })
               </div>
 
               {/* Added Categories */}
-              {fields.map((field: any, index: number) => {
+              {fields.map((field: { id: string; category: string; activity_type: string; quantity: number; unit: string; emission_factor: number; data_quality: string; description?: string }, index: number) => {
                 const categoryInfo = getCategoryInfo(field.category);
                 return (
                   <div key={field.id} className="border border-gray-200 rounded-lg p-4 space-y-4">
@@ -401,7 +401,7 @@ export const Scope3Calculator: React.FC<Scope3CalculatorProps> = ({ className })
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {activityTypes[field.category as keyof typeof activityTypes]?.map((type: string) => (
+                                {activityTypes[form.getValues(`categories.${index}.category`) as keyof typeof activityTypes]?.map((type: string) => (
                                   <SelectItem key={type} value={type}>
                                     {type}
                                   </SelectItem>
@@ -551,19 +551,19 @@ export const Scope3Calculator: React.FC<Scope3CalculatorProps> = ({ className })
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="text-center p-4 bg-blue-50 rounded-lg">
                     <div className="text-2xl font-bold text-blue-600">
-                      {calculateMutation.data.total_emissions.toLocaleString()}
+                      {calculateMutation.data.total_co2e.toLocaleString()}
                     </div>
                     <div className="text-sm text-blue-700">Total tCO₂e</div>
                   </div>
                   <div className="text-center p-4 bg-green-50 rounded-lg">
                     <div className="text-2xl font-bold text-green-600">
-                      {calculateMutation.data.categories.length}
+                      {fields.length}
                     </div>
                     <div className="text-sm text-green-700">Categories</div>
                   </div>
                   <div className="text-center p-4 bg-purple-50 rounded-lg">
                     <div className="text-2xl font-bold text-purple-600">
-                      {calculateMutation.data.calculation_id}
+                      {calculateMutation.data.id}
                     </div>
                     <div className="text-sm text-purple-700">Calculation ID</div>
                   </div>

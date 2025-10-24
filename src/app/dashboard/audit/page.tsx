@@ -9,9 +9,9 @@ import React, { useState } from 'react';
 import { AuditDashboard } from '@/components/features/audit/audit-dashboard';
 
 export default function AuditPage() {
-  const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
-  const [selectedInvestigationId, setSelectedInvestigationId] = useState<string | null>(null);
-  const [selectedSecurityEventId, setSelectedSecurityEventId] = useState<string | null>(null);
+  const [_selectedLogId, setSelectedLogId] = useState<string | null>(null);
+  const [_selectedInvestigationId, setSelectedInvestigationId] = useState<string | null>(null);
+  const [_selectedSecurityEventId, setSelectedSecurityEventId] = useState<string | null>(null);
 
   const handleLogSelect = (logId: string) => {
     setSelectedLogId(logId);

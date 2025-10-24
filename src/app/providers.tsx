@@ -20,7 +20,7 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
     console.log('AuthInitializer - App starting, initializing auth state');
     console.log('AuthInitializer - Current auth state:', { isInitialized, isLoading });
     initialize();
-  }, [initialize]);
+  }, [initialize, isInitialized, isLoading]);
 
   // Log state changes for debugging
   useEffect(() => {

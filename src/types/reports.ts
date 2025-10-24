@@ -122,9 +122,9 @@ export interface ReportRevision {
   user_name?: string;
   change_type: 'created' | 'updated' | 'approved' | 'locked' | 'unlocked' | 'commented' | 'status_changed';
   changes_summary: string;
-  previous_values?: Record<string, any>;
-  new_values?: Record<string, any>;
-  metadata?: Record<string, any>;
+  previous_values?: Record<string, unknown>;
+  new_values?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
   created_at: string;
 }
 
@@ -201,7 +201,7 @@ export interface ReportSection {
   title: string;
   type: 'text' | 'calculation' | 'chart' | 'table' | 'attachment';
   content?: string;
-  configuration?: Record<string, any>;
+  configuration?: Record<string, unknown>;
   order: number;
   is_required: boolean;
 }
@@ -285,7 +285,7 @@ export interface ReportPermissions {
 export interface BulkReportOperation {
   operation: 'lock' | 'unlock' | 'approve' | 'archive' | 'delete' | 'export';
   report_ids: string[];
-  parameters?: Record<string, any>;
+  parameters?: Record<string, unknown>;
 }
 
 export interface BulkOperationResult {

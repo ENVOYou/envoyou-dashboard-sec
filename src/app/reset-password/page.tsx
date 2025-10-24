@@ -34,7 +34,7 @@ function ResetPasswordForm() {
   }, [searchParams, router]);
 
   const resetPasswordMutation = useMutation({
-    mutationFn: async (data: ResetPasswordRequest) => {
+    mutationFn: async (_data: ResetPasswordRequest) => {
       console.log('Resetting password with token');
       // Note: This endpoint might not exist yet in the backend
       // We'll use a placeholder for now

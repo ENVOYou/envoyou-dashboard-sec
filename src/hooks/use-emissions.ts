@@ -11,20 +11,120 @@ export const EMISSIONS_QUERY_KEYS = {
   all: ['emissions'] as const,
   calculations: () => [...EMISSIONS_QUERY_KEYS.all, 'calculations'] as const,
   calculation: (id: string) => [...EMISSIONS_QUERY_KEYS.all, 'calculation', id] as const,
-  validation: (params?: any) => [...EMISSIONS_QUERY_KEYS.all, 'validation', params] as const,
+  validation: (params?: ValidationParams) => [...EMISSIONS_QUERY_KEYS.all, 'validation', params] as const,
   factors: () => [...EMISSIONS_QUERY_KEYS.all, 'factors'] as const,
-  analytics: (params?: any) => [...EMISSIONS_QUERY_KEYS.all, 'analytics', params] as const,
-  trends: (params?: any) => [...EMISSIONS_QUERY_KEYS.all, 'trends', params] as const,
+  analytics: (params?: AnalyticsParams) => [...EMISSIONS_QUERY_KEYS.all, 'analytics', params] as const,
+  trends: (params?: TrendsParams) => [...EMISSIONS_QUERY_KEYS.all, 'trends', params] as const,
   benchmarks: () => [...EMISSIONS_QUERY_KEYS.all, 'benchmarks'] as const,
 };
 
-// Emissions Calculations Hook
-export const useEmissionsCalculations = (params?: {
+// Type definitions for hook parameters
+interface CalculationsParams {
   company_id?: string;
   status?: string;
   limit?: number;
   offset?: number;
-}) => {
+}
+
+interface ValidationParams {
+  calculation_id?: string;
+  company_id?: string;
+  validation_types?: string[];
+}
+
+interface FactorsParams {
+  source?: string;
+  category?: string;
+  fuel_type?: string;
+  electricity_region?: string;
+  force_refresh?: boolean;
+}
+
+interface AnalyticsParams {
+  company_id?: string;
+  date_from?: string;
+  date_to?: string;
+  scope?: string[];
+  aggregation?: 'daily' | 'weekly' | 'monthly' | 'yearly';
+}
+
+interface TrendsParams {
+  company_id?: string;
+  date_from?: string;
+  date_to?: string;
+  scope?: string[];
+  comparison_period?: string;
+}
+
+interface BenchmarksParams {
+  industry?: string;
+  company_size?: string;
+  region?: string;
+  scope?: string[];
+}
+
+interface Scope1CalculationData {
+  calculation_name: string;
+  company_id: string;
+  reporting_period_start: string;
+  reporting_period_end: string;
+  activity_data: Array<{
+    activity_type: string;
+    fuel_type: string;
+    quantity: number;
+    unit: string;
+    data_quality: string;
+  }>;
+}
+
+interface Scope2CalculationData {
+  calculation_name: string;
+  company_id: string;
+  reporting_period_start: string;
+  reporting_period_end: string;
+  electricity_consumption: Array<{
+    activity_type: string;
+    quantity: number;
+    unit: string;
+    location: string;
+    data_quality: string;
+  }>;
+  calculation_method: 'location_based' | 'market_based';
+}
+
+interface Scope3CalculationData {
+  calculation_name: string;
+  company_id: string;
+  reporting_period_start: string;
+  reporting_period_end: string;
+  categories: Array<{
+    category: string;
+    activity_type: string;
+    quantity: number;
+    unit: string;
+    emission_factor: number;
+    data_quality: string;
+    description?: string;
+  }>;
+}
+
+interface ImportOptions {
+  company_id?: string;
+  data_format?: string;
+  overwrite_existing?: boolean;
+}
+
+interface ExportData {
+  format: 'csv' | 'excel' | 'json';
+  company_id?: string;
+  date_from?: string;
+  date_to?: string;
+  scope?: string[];
+  include_validation?: boolean;
+}
+
+// Emissions Calculations Hook
+export const useEmissionsCalculations = (params?: CalculationsParams) => {
   return useQuery({
     queryKey: [...EMISSIONS_QUERY_KEYS.calculations(), params],
     queryFn: () => apiClient.getEmissionsCalculations(params),
@@ -43,11 +143,7 @@ export const useEmissionsCalculation = (id: string) => {
 };
 
 // Emissions Validation Hook
-export const useEmissionsValidation = (params?: {
-  calculation_id?: string;
-  company_id?: string;
-  validation_types?: string[];
-}) => {
+export const useEmissionsValidation = (params?: ValidationParams) => {
   return useQuery({
     queryKey: EMISSIONS_QUERY_KEYS.validation(params),
     queryFn: () => apiClient.getEmissionsValidation(params),
@@ -57,13 +153,7 @@ export const useEmissionsValidation = (params?: {
 };
 
 // Emissions Factors Hook
-export const useEmissionsFactors = (params?: {
-  source?: string;
-  category?: string;
-  fuel_type?: string;
-  electricity_region?: string;
-  force_refresh?: boolean;
-}) => {
+export const useEmissionsFactors = (params?: FactorsParams) => {
   return useQuery({
     queryKey: [...EMISSIONS_QUERY_KEYS.factors(), params],
     queryFn: () => apiClient.getEmissionsFactors(params),
@@ -72,13 +162,7 @@ export const useEmissionsFactors = (params?: {
 };
 
 // Emissions Analytics Hook
-export const useEmissionsAnalytics = (params?: {
-  company_id?: string;
-  date_from?: string;
-  date_to?: string;
-  scope?: string[];
-  aggregation?: 'daily' | 'weekly' | 'monthly' | 'yearly';
-}) => {
+export const useEmissionsAnalytics = (params?: AnalyticsParams) => {
   return useQuery({
     queryKey: EMISSIONS_QUERY_KEYS.analytics(params),
     queryFn: () => apiClient.getEmissionsAnalytics(params),
@@ -87,13 +171,7 @@ export const useEmissionsAnalytics = (params?: {
 };
 
 // Emissions Trends Hook
-export const useEmissionsTrends = (params?: {
-  company_id?: string;
-  date_from?: string;
-  date_to?: string;
-  scope?: string[];
-  comparison_period?: string;
-}) => {
+export const useEmissionsTrends = (params?: TrendsParams) => {
   return useQuery({
     queryKey: EMISSIONS_QUERY_KEYS.trends(params),
     queryFn: () => apiClient.getEmissionsTrends(params),
@@ -102,12 +180,7 @@ export const useEmissionsTrends = (params?: {
 };
 
 // Industry Benchmarks Hook
-export const useIndustryBenchmarks = (params?: {
-  industry?: string;
-  company_size?: string;
-  region?: string;
-  scope?: string[];
-}) => {
+export const useIndustryBenchmarks = (params?: BenchmarksParams) => {
   return useQuery({
     queryKey: [...EMISSIONS_QUERY_KEYS.benchmarks(), params],
     queryFn: () => apiClient.getIndustryBenchmarks(params),
@@ -120,19 +193,7 @@ export const useCalculateScope1 = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: {
-      calculation_name: string;
-      company_id: string;
-      reporting_period_start: string;
-      reporting_period_end: string;
-      activity_data: Array<{
-        activity_type: string;
-        fuel_type: string;
-        quantity: number;
-        unit: string;
-        data_quality: string;
-      }>;
-    }) => apiClient.calculateScope1(data),
+    mutationFn: (data: Scope1CalculationData) => apiClient.calculateScope1(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: EMISSIONS_QUERY_KEYS.calculations() });
       queryClient.invalidateQueries({ queryKey: EMISSIONS_QUERY_KEYS.analytics() });
@@ -146,20 +207,7 @@ export const useCalculateScope2 = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: {
-      calculation_name: string;
-      company_id: string;
-      reporting_period_start: string;
-      reporting_period_end: string;
-      electricity_consumption: Array<{
-        activity_type: string;
-        quantity: number;
-        unit: string;
-        location: string;
-        data_quality: string;
-      }>;
-      calculation_method: 'location_based' | 'market_based';
-    }) => apiClient.calculateScope2(data),
+    mutationFn: (data: Scope2CalculationData) => apiClient.calculateScope2(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: EMISSIONS_QUERY_KEYS.calculations() });
       queryClient.invalidateQueries({ queryKey: EMISSIONS_QUERY_KEYS.analytics() });
@@ -173,21 +221,7 @@ export const useCalculateScope3 = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: {
-      calculation_name: string;
-      company_id: string;
-      reporting_period_start: string;
-      reporting_period_end: string;
-      categories: Array<{
-        category: string;
-        activity_type: string;
-        quantity: number;
-        unit: string;
-        emission_factor: number;
-        data_quality: string;
-        description?: string;
-      }>;
-    }) => apiClient.calculateScope3(data),
+    mutationFn: (data: Scope3CalculationData) => apiClient.calculateScope3(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: EMISSIONS_QUERY_KEYS.calculations() });
       queryClient.invalidateQueries({ queryKey: EMISSIONS_QUERY_KEYS.analytics() });
@@ -201,7 +235,7 @@ export const useImportEmissionsData = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ file, options }: { file: File; options?: any }) =>
+    mutationFn: ({ file, options }: { file: File; options?: ImportOptions }) =>
       apiClient.importEmissionsData(file, options),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: EMISSIONS_QUERY_KEYS.calculations() });
@@ -213,14 +247,7 @@ export const useImportEmissionsData = () => {
 // Emissions Data Export Hook
 export const useExportEmissionsData = () => {
   return useMutation({
-    mutationFn: (data: {
-      format: 'csv' | 'excel' | 'json';
-      company_id?: string;
-      date_from?: string;
-      date_to?: string;
-      scope?: string[];
-      include_validation?: boolean;
-    }) => apiClient.exportEmissionsData(data),
+    mutationFn: (data: ExportData) => apiClient.exportEmissionsData(data),
   });
 };
 
@@ -229,7 +256,7 @@ export const useRefreshEPAData = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data?: any) => apiClient.refreshEPAData(data),
+    mutationFn: (data?: Record<string, unknown>) => apiClient.refreshEPAData(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: EMISSIONS_QUERY_KEYS.factors() });
       queryClient.invalidateQueries({ queryKey: EMISSIONS_QUERY_KEYS.benchmarks() });

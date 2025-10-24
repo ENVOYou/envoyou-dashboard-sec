@@ -199,7 +199,7 @@ export const useCreateEPAReportingSubmission = () => {
   return useMutation({
     mutationFn: (data: {
       schedule_id: string;
-      submission_data: Record<string, any>;
+      submission_data: Record<string, unknown>;
       attachments?: File[];
     }) => apiClient.createEPAReportingSubmission(data),
     onSuccess: () => {

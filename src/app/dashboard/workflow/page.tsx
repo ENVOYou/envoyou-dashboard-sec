@@ -13,7 +13,7 @@ import type { Workflow } from '@/types/workflow';
 
 export default function WorkflowPage() {
   const router = useRouter();
-  const [showPendingOnly, setShowPendingOnly] = useState(false);
+  const [showPendingOnly, _setShowPendingOnly] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const handleWorkflowSelect = (workflow: Workflow) => {

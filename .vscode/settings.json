@@ -1,5 +1,5 @@
 {
   "css.lint.unknownAtRules": "ignore",
   "css.lint.unknownProperties": "ignore",
-  "terminal.integrated.automationProfile.linux": null,
+"terminal.integrated.automationProfile.linux": null,
 }

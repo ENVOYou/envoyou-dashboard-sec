@@ -37,7 +37,7 @@ export interface DetectedAnomaly {
   };
   confidence_score: number;
   recommendations: string[];
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   related_emissions?: string[];
   impact_assessment?: {
     financial_impact: number;
@@ -299,7 +299,7 @@ export interface EscalationRule {
   id: string;
   condition: 'severity_threshold' | 'multiple_anomalies' | 'trend_direction' | 'time_elapsed';
   operator: 'greater_than' | 'less_than' | 'equals' | 'contains';
-  value: any;
+  value: string | number | string[];
   action: 'notify' | 'escalate' | 'create_ticket' | 'require_review';
   target_users?: string[];
   target_roles?: string[];
@@ -388,7 +388,7 @@ export interface AnomalyDetectionResponse {
 export interface AnomalyDetectionError {
   code: string;
   message: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   company_id?: string;
   reporting_year?: number;
   suggested_actions?: string[];

@@ -184,7 +184,7 @@ export const EmissionsImportExport: React.FC<EmissionsImportExportProps> = ({
           <EnhancedCardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Export Format</Label>
-              <Select value={exportFormat} onValueChange={(value: any) => setExportFormat(value)}>
+              <Select value={exportFormat} onValueChange={(value) => setExportFormat(value as 'csv' | 'excel' | 'json')}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

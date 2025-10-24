@@ -166,9 +166,9 @@ export const EmissionsAnalytics: React.FC<EmissionsAnalyticsProps> = ({
     ],
   };
 
-  const data = analytics || mockAnalytics;
-  const trendData = trends || mockTrends;
-  const benchmarkData = benchmarks || mockBenchmarks;
+  const data = (analytics && typeof analytics === 'object' && Object.keys(analytics).length > 0) ? analytics as typeof mockAnalytics : mockAnalytics;
+  const trendData = (trends && typeof trends === 'object' && Object.keys(trends).length > 0) ? trends as typeof mockTrends : mockTrends;
+  const benchmarkData = (benchmarks && typeof benchmarks === 'object' && Object.keys(benchmarks).length > 0) ? benchmarks as typeof mockBenchmarks : mockBenchmarks;
 
   return (
     <div className={cn('space-y-6', className)}>

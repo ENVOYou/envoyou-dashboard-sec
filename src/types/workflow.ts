@@ -21,7 +21,7 @@ export interface Workflow {
   assigned_users?: string[];
   approvers?: WorkflowApprover[];
   attachments?: WorkflowAttachment[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 // Workflow Approver
@@ -114,7 +114,7 @@ export interface WorkflowCreate {
   assigned_users?: string[];
   stages?: WorkflowStageCreate[];
   attachments?: File[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface WorkflowStageCreate {
@@ -134,7 +134,7 @@ export interface WorkflowUpdate {
   priority?: Workflow['priority'];
   due_date?: string;
   assigned_users?: string[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface WorkflowStatusUpdate {
@@ -207,7 +207,7 @@ export interface WorkflowActivity {
   user_name: string;
   description: string;
   created_at: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 // Notifications
@@ -245,7 +245,7 @@ export interface WorkflowTemplate {
 export interface BulkWorkflowOperation {
   operation: 'approve' | 'reject' | 'escalate' | 'cancel' | 'reassign';
   workflow_ids: string[];
-  parameters?: Record<string, any>;
+  parameters?: Record<string, unknown>;
 }
 
 export interface BulkWorkflowOperationResult {
@@ -351,7 +351,7 @@ export interface AutoApprovalRule {
   id: string;
   condition: 'amount_threshold' | 'user_role' | 'workflow_type' | 'time_based';
   operator: 'equals' | 'greater_than' | 'less_than' | 'contains' | 'in';
-  value: any;
+  value: string | number | string[];
   action: 'auto_approve' | 'auto_reject' | 'require_additional_approval';
 }
 

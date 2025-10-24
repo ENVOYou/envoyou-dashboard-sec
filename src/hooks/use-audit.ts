@@ -26,6 +26,33 @@ import type {
   AuditLogsResponse,
 } from '@/types/audit';
 
+// Type definitions for hook parameters
+interface SecurityEventFilters {
+  severity?: string[];
+  event_type?: string[];
+  company_id?: string;
+  date_from?: string;
+  date_to?: string;
+}
+
+interface InvestigationFilters {
+  status?: string[];
+  priority?: string[];
+  assigned_to?: string;
+  company_id?: string;
+}
+
+interface InvestigationCloseData {
+  findings: string;
+  recommendations: string[];
+  evidence: string[];
+}
+
+interface RetentionPolicyUpdate {
+  default_retention: string;
+  category_retention: Record<string, string>;
+}
+
 // Query Keys
 export const AUDIT_QUERY_KEYS = {
   all: ['audit'] as const,
@@ -108,7 +135,7 @@ export const useComplianceReport = (reportType: string, companyId?: string, date
   return useQuery({
     queryKey: [...AUDIT_QUERY_KEYS.compliance(), reportType, companyId, dateRange],
     queryFn: () => apiClient.generateComplianceReport({
-      report_type: reportType as any,
+      report_type: reportType as 'sox' | 'gdpr' | 'hipaa' | 'pci_dss' | 'iso27001' | 'custom',
       company_id: companyId,
       date_range: dateRange!,
       format: 'pdf', // Default format
@@ -119,7 +146,7 @@ export const useComplianceReport = (reportType: string, companyId?: string, date
 };
 
 // Security Events Hook
-export const useSecurityEvents = (filters?: any) => {
+export const useSecurityEvents = (filters?: SecurityEventFilters) => {
   return useQuery({
     queryKey: [...AUDIT_QUERY_KEYS.security(), filters],
     queryFn: () => apiClient.getSecurityEvents(filters),
@@ -148,7 +175,7 @@ export const useAuditActivity = (limit = 50) => {
 };
 
 // Investigations Hook
-export const useInvestigations = (filters?: any) => {
+export const useInvestigations = (filters?: InvestigationFilters) => {
   return useQuery({
     queryKey: [...AUDIT_QUERY_KEYS.investigations(), filters],
     queryFn: () => apiClient.getInvestigations(filters),
@@ -199,7 +226,7 @@ export const useCloseInvestigation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ investigationId, data }: { investigationId: string; data: any }) =>
+    mutationFn: ({ investigationId, data }: { investigationId: string; data: InvestigationCloseData }) =>
       apiClient.closeInvestigation(investigationId, data),
     onSuccess: (result, { investigationId }) => {
       queryClient.invalidateQueries({ queryKey: AUDIT_QUERY_KEYS.investigation(investigationId) });
@@ -246,7 +273,7 @@ export const useUpdateAuditRetentionPolicy = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => apiClient.updateAuditRetentionPolicy(data),
+    mutationFn: (data: RetentionPolicyUpdate) => apiClient.updateAuditRetentionPolicy(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: AUDIT_QUERY_KEYS.retention() });
     },

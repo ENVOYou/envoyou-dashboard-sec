@@ -210,7 +210,7 @@ export const WorkflowCreateForm: React.FC<WorkflowCreateFormProps> = ({
                           />
                         </FormControl>
                         <FormDescription>
-                          Optional description of the workflow's purpose and scope
+                          Optional description of the workflow&apos;s purpose and scope
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

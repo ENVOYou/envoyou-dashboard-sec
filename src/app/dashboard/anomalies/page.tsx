@@ -9,7 +9,7 @@ import React, { useState } from 'react';
 import { AnomalyDashboard } from '@/components/features/anomaly-detection/anomaly-dashboard';
 
 export default function AnomaliesPage() {
-  const [selectedAnomalyId, setSelectedAnomalyId] = useState<string | null>(null);
+  const [_selectedAnomalyId, setSelectedAnomalyId] = useState<string | null>(null);
 
   const handleAnomalySelect = (anomalyId: string) => {
     setSelectedAnomalyId(anomalyId);

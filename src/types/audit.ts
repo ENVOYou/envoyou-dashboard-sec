@@ -14,7 +14,7 @@ export interface AuditLog {
   company_name?: string;
   entity_id?: string;
   entity_name?: string;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   ip_address?: string;
   user_agent?: string;
   session_id?: string;
@@ -41,9 +41,9 @@ export interface EnhancedAuditLog {
   resource_type: string;
   resource_id?: string;
   action: string;
-  details: Record<string, any>;
-  before_values?: Record<string, any>;
-  after_values?: Record<string, any>;
+  details: Record<string, unknown>;
+  before_values?: Record<string, unknown>;
+  after_values?: Record<string, unknown>;
   ip_address?: string;
   user_agent?: string;
   session_id?: string;
@@ -148,7 +148,7 @@ export interface AuditTrailEvent {
   user_id: string;
   user_name: string;
   action: string;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   risk_level: string;
   compliance_relevant: boolean;
   related_events: string[];
@@ -176,7 +176,13 @@ export interface ForensicAnalysisRequest {
 export interface ForensicAnalysisResponse {
   investigation_id: string;
   analysis_type: string;
-  scope: any;
+  scope: {
+    start_date: string;
+    end_date: string;
+    entities?: string[];
+    systems?: string[];
+    users?: string[];
+  };
   findings: ForensicFinding[];
   patterns: DetectedPattern[];
   anomalies: ForensicAnomaly[];
@@ -267,7 +273,7 @@ export interface EvidenceItem {
   id: string;
   type: 'log_entry' | 'screenshot' | 'file' | 'database_record' | 'network_capture';
   description: string;
-  content: any;
+  content: Record<string, unknown> | string | Buffer;
   timestamp: string;
   source: string;
   chain_of_custody: string[];
@@ -350,7 +356,7 @@ export interface SecurityEvent {
   company_id?: string;
   company_name?: string;
   description: string;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   risk_score: number;
   threat_level: 'low' | 'medium' | 'high' | 'critical';
   indicators: SecurityIndicator[];
@@ -363,7 +369,7 @@ export interface SecurityEvent {
 
 export interface SecurityIndicator {
   type: 'ip_reputation' | 'geographic_anomaly' | 'time_anomaly' | 'behavior_anomaly' | 'data_volume';
-  value: any;
+  value: string | number | boolean | Record<string, unknown>;
   risk_score: number;
   description: string;
   confidence: number;
@@ -412,7 +418,7 @@ export interface AuditActivity {
   timestamp: string;
   risk_level: string;
   compliance_relevant: boolean;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 // Export and Reporting
@@ -511,14 +517,20 @@ export interface AuditLogsResponse {
   page: number;
   page_size: number;
   total_pages: number;
-  aggregations?: any;
-  risk_summary?: any;
+  aggregations?: Record<string, unknown>;
+  risk_summary?: {
+    total_events: number;
+    high_risk_events: number;
+    medium_risk_events: number;
+    low_risk_events: number;
+    risk_score: number;
+  };
 }
 
 export interface AuditError {
   code: string;
   message: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   suggested_actions?: string[];
 }
 

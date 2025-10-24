@@ -30,6 +30,20 @@ import type {
   BulkOperationResult,
 } from '@/types/reports';
 
+// Additional type definitions for hooks
+interface ReportRevisionData {
+  change_type: string;
+  changes_summary: string;
+  previous_values?: Record<string, unknown>;
+  new_values?: Record<string, unknown>;
+}
+
+interface ReportImportOptions {
+  report_type?: string;
+  company_id?: string;
+  overwrite_existing?: boolean;
+}
+
 // Query Keys
 export const REPORTS_QUERY_KEYS = {
   all: ['reports'] as const,
@@ -220,7 +234,7 @@ export const useCreateRevision = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ reportId, data }: { reportId: string; data: any }) =>
+    mutationFn: ({ reportId, data }: { reportId: string; data: ReportRevisionData }) =>
       apiClient.createReportRevision(reportId, data),
     onSuccess: (result, { reportId }) => {
       queryClient.invalidateQueries({ queryKey: REPORTS_QUERY_KEYS.revisions(reportId) });
@@ -319,7 +333,7 @@ export const useImportReports = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ file, options }: { file: File; options?: any }) =>
+    mutationFn: ({ file, options }: { file: File; options?: ReportImportOptions }) =>
       apiClient.importReports(file, options),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: REPORTS_QUERY_KEYS.lists() });

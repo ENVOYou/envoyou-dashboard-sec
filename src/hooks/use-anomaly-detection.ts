@@ -27,6 +27,13 @@ import type {
   DetectedAnomaly,
 } from '@/types/anomaly-detection';
 
+// Additional type definitions for hooks
+interface AnomalyResolutionData {
+  resolution: string;
+  action_taken: string;
+  preventive_measures?: string[];
+}
+
 // Query Keys
 export const ANOMALY_QUERY_KEYS = {
   all: ['anomalies'] as const,
@@ -198,7 +205,7 @@ export const useResolveAnomaly = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ anomalyId, data }: { anomalyId: string; data: any }) =>
+    mutationFn: ({ anomalyId, data }: { anomalyId: string; data: AnomalyResolutionData }) =>
       apiClient.resolveAnomaly(anomalyId, data),
     onSuccess: (result, { anomalyId }) => {
       queryClient.invalidateQueries({ queryKey: ANOMALY_QUERY_KEYS.anomaly(anomalyId) });

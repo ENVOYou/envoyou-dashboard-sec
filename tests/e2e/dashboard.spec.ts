@@ -1,32 +1,11 @@
 import { test, expect } from '@playwright/test';
+import { setupAuthentication, setupDashboardAPI } from './helpers/auth-setup';
 
 test.describe('Dashboard', () => {
   test.beforeEach(async ({ page }) => {
-    // Mock authenticated state
-    await page.addInitScript(() => {
-      window.localStorage.setItem('auth_token', 'mock-jwt-token');
-      window.localStorage.setItem('user', JSON.stringify({
-        id: '1',
-        email: 'Admin@example.com',
-        full_name: 'Admin User',
-        role: 'admin'
-      }));
-    });
-
-    // Mock API responses
-    await page.route('**/emissions/companies/default-company/summary*', async route => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          total_co2e: 1250.75,
-          total_scope1_co2e: 650.25,
-          total_scope2_co2e: 600.50,
-          data_quality_score: 92,
-          year: 2024
-        })
-      });
-    });
+    // Set up authentication and API mocks
+    await setupAuthentication(page);
+    await setupDashboardAPI(page);
   });
 
   test('should display dashboard with emissions data', async ({ page }) => {

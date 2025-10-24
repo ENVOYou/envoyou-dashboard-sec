@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [isStaging, setIsStaging] = useState(false);
 
-  const router = useRouter();
+  const _router = useRouter();
   const { login } = useAuthStore();
   const { executeRecaptcha, isLoaded: recaptchaLoaded } = useRecaptcha();
 

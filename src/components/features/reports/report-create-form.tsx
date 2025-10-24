@@ -294,7 +294,7 @@ export const ReportCreateForm: React.FC<ReportCreateFormProps> = ({
                           />
                         </FormControl>
                         <FormDescription>
-                          Optional description of the report's purpose and scope
+                          Optional description of the report&apos;s purpose and scope
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

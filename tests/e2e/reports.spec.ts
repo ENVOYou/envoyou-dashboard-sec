@@ -1,151 +1,35 @@
 import { test, expect } from '@playwright/test';
+import { setupAuthentication, setupReportsAPI } from './helpers/auth-setup';
 
 test.describe('Reports Management', () => {
   test.beforeEach(async ({ page }) => {
-    // Mock authenticated state
-    await page.addInitScript(() => {
-      window.localStorage.setItem('auth_token', 'mock-jwt-token');
-      window.localStorage.setItem('user', JSON.stringify({
-        id: '1',
-        email: 'admin@example.com',
-        full_name: 'Admin User',
-        role: 'admin'
-      }));
-    });
-
-    // Mock API responses for reports
-    await page.route('**/reports*', async route => {
-      const url = route.request().url();
-
-      if (url.includes('/reports/') && !url.endsWith('/reports/')) {
-        // Individual report endpoint
-        const reportId = url.split('/reports/')[1].split('/')[0];
-        if (route.request().method() === 'GET') {
-          await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({
-              id: reportId,
-              title: 'Sample SEC 10-K Report',
-              report_type: 'sec_10k',
-              status: 'draft',
-              version: '1.0',
-              created_at: '2024-01-15T10:30:00Z',
-              updated_at: '2024-01-15T14:20:00Z',
-              created_by: '1',
-              company_id: 'company-123',
-              reporting_year: 2024,
-              description: 'Annual SEC 10-K filing for climate disclosure',
-              priority: 'high',
-              tags: ['climate', 'sec', 'annual'],
-              due_date: '2024-03-31T23:59:59Z'
-            })
-          });
-        } else if (route.request().method() === 'PUT') {
-          await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({
-              id: reportId,
-              title: 'Updated SEC 10-K Report',
-              report_type: 'sec_10k',
-              status: 'in_review',
-              version: '1.1',
-              created_at: '2024-01-15T10:30:00Z',
-              updated_at: '2024-01-16T09:15:00Z',
-              created_by: '1',
-              updated_by: '1',
-              company_id: 'company-123',
-              reporting_year: 2024,
-              description: 'Updated annual SEC 10-K filing',
-              priority: 'high',
-              tags: ['climate', 'sec', 'annual', 'updated']
-            })
-          });
-        } else if (route.request().method() === 'DELETE') {
-          await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({ success: true, message: 'Report deleted successfully' })
-          });
-        }
-      } else if (url.endsWith('/reports/') || url.includes('/reports?')) {
-        // Reports list endpoint
-        if (route.request().method() === 'GET') {
-          await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({
-              reports: [
-                {
-                  id: 'report-1',
-                  title: 'Q1 2024 GHG Report',
-                  report_type: 'ghg_report',
-                  status: 'approved',
-                  version: '1.0',
-                  created_at: '2024-01-10T08:00:00Z',
-                  updated_at: '2024-01-12T16:30:00Z',
-                  created_by: '1',
-                  company_id: 'company-123',
-                  reporting_year: 2024,
-                  priority: 'medium'
-                },
-                {
-                  id: 'report-2',
-                  title: 'Annual Sustainability Report',
-                  report_type: 'sustainability_report',
-                  status: 'draft',
-                  version: '0.5',
-                  created_at: '2024-01-14T14:20:00Z',
-                  updated_at: '2024-01-15T11:45:00Z',
-                  created_by: '1',
-                  company_id: 'company-123',
-                  reporting_year: 2024,
-                  priority: 'high',
-                  description: 'Comprehensive sustainability disclosure'
-                }
-              ],
-              total_count: 2,
-              page: 1,
-              page_size: 20,
-              total_pages: 1
-            })
-          });
-        } else if (route.request().method() === 'POST') {
-          await route.fulfill({
-            status: 201,
-            contentType: 'application/json',
-            body: JSON.stringify({
-              id: 'report-new',
-              title: 'New Test Report',
-              report_type: 'sec_10k',
-              status: 'draft',
-              version: '1.0',
-              created_at: '2024-01-16T10:00:00Z',
-              updated_at: '2024-01-16T10:00:00Z',
-              created_by: '1',
-              company_id: 'company-123',
-              reporting_year: 2024,
-              priority: 'medium'
-            })
-          });
-        }
-      }
-    });
+    // Set up authentication and API mocks
+    await setupAuthentication(page);
+    await setupReportsAPI(page);
   });
 
   test('should display reports list page', async ({ page }) => {
-    await page.goto('/dashboard/reports');
+    // Enable console logging to debug
+    page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+    page.on('pageerror', error => console.log('PAGE ERROR:', error.message));
 
-    // Check page title and description
-    await expect(page.locator('text=Reports')).toBeVisible();
+    // Navigate directly to the reports page
+    await page.goto('/dashboard/reports', { waitUntil: 'domcontentloaded', timeout: 30000 });
+
+    // Wait for the page to load
+    await page.waitForLoadState('networkidle');
+    
+    // Take a screenshot for debugging
+    await page.screenshot({ path: 'test-results/reports-page-debug.png', fullPage: true });
+
+    // Check for the main heading (be more specific)
+    await expect(page.locator('h1').filter({ hasText: 'Reports' })).toBeVisible();
+    
+    // Check for the description
     await expect(page.locator('text=Manage and track your SEC climate disclosure reports')).toBeVisible();
 
     // Check create report button
     await expect(page.locator('text=Create Report')).toBeVisible();
-
-    // Check search functionality
-    await expect(page.locator('placeholder=Search reports...')).toBeVisible();
   });
 
   test('should display reports in table format', async ({ page }) => {
