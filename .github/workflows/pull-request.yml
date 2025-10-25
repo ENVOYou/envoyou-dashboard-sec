@@ -29,10 +29,10 @@ jobs:
       - name: Run linting
         run: npm run lint
 
-      - name: Start mock API
-        run: |
-            cd backend
-            uvicorn main:app --host 0.0.0.0 --port 8000 &
+      - name: Use staging API instead of local backend
+        run: echo "Using staging backend at https://staging-api.envoyou.com"
+        env:
+            NEXT_PUBLIC_API_URL: "https://staging-api.envoyou.com"
 
       - name: Run unit and integration tests with coverage
         run: npm run test:coverage
@@ -90,6 +90,8 @@ jobs:
 
       - name: Run E2E tests
         run: npm run test:e2e
+        env:
+            NEXT_PUBLIC_API_URL: "https://staging-api.envoyou.com"
 
       - name: Upload E2E test results
         uses: actions/upload-artifact@v4
