@@ -38,7 +38,9 @@ jobs:
           file: coverage/lcov.info
           flags: unittests
           name: Unit Tests Coverage
-          fail_ci_if_error: true
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+        continue-on-error: true
 
       - name: Enforce Coverage Quality Gates
         run: |
