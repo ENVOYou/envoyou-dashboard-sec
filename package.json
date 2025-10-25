@@ -7,7 +7,7 @@
     "dev": "cross-env NODE_ENV=development next dev --turbopack",
     "build": "cross-env NODE_ENV=production next build --turbopack",
     "build:analyze": "next build --turbopack && npx next-bundle-analyzer",
-    "start": "cross-env NODE_ENV=production next build next start",
+    "start": "cross-env NODE_ENV=production next start",
     "lint": "eslint",
     "test": "jest",
     "test:watch": "jest --watch",
