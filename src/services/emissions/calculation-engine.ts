@@ -10,9 +10,12 @@ import type {
   ActivityDataInput
 } from '@/lib/api-client';
 import type {
-  EmissionCalculation,
-  CalculationSummary
+  EmissionCalculation
 } from '@/types/api';
+import type {
+  CalculationSummary,
+  EmissionsCalculationResponse
+} from '@/types/emissions';
 
 export interface CalculationFilters {
   company_id?: string;
@@ -87,7 +90,7 @@ export class CalculationEngine {
   /**
    * Get detailed calculation by ID
    */
-  async getCalculation(calculationId: string): Promise<EmissionCalculation> {
+  async getCalculation(calculationId: string): Promise<EmissionsCalculationResponse> {
     try {
       const calculation = await apiClient.getCalculation(calculationId);
       return calculation;
