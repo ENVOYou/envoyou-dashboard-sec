@@ -28,7 +28,7 @@ import {
 import { useReportActivity } from '@/hooks/use-reports';
 import { EnhancedCard, EnhancedCardContent, EnhancedCardHeader } from '@/components/ui/enhanced-card';
 import { cn } from '@/lib/utils';
-import type { ReportActivity } from '@/types/reports';
+import type { ReportActivity as ReportActivityType } from '@/types/reports';
 
 interface ReportActivityProps {
   reportId: string;
@@ -36,7 +36,7 @@ interface ReportActivityProps {
 }
 
 interface ActivityItemProps {
-  activity: ReportActivity;
+  activity: ReportActivityType;
 }
 
 const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
@@ -96,7 +96,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
 
   return (
     <div className={cn('flex gap-3 pb-4 border-l-2 pl-4', getActivityColor(activity.type))}>
-      <div className="flex-shrink-0 mt-1">
+      <div className="shrink-0 mt-1">
         <div className="w-8 h-8 bg-white border-2 border-gray-200 rounded-full flex items-center justify-center">
           {getActivityIcon(activity.type)}
         </div>

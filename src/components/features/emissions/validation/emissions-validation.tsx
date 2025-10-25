@@ -128,16 +128,41 @@ export const EmissionsValidation: React.FC<EmissionsValidationProps> = ({ compan
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <ValidationResults 
-            validationMetrics={validationMetrics}
-            companyId={companyId}
-          />
+          <Card>
+            <CardHeader>
+              <CardTitle>Validation Overview</CardTitle>
+              <CardDescription>
+                Summary of validation metrics for {companyId}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="text-2xl font-bold text-gray-900">
+                    {validationMetrics?.total_validations || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">Total Validations</div>
+                </div>
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">
+                    {((validationMetrics?.success_rate || 0) * 100).toFixed(1)}%
+                  </div>
+                  <div className="text-sm text-gray-600">Success Rate</div>
+                </div>
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {validationMetrics?.average_quality_score || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">Avg Quality Score</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="quality" className="space-y-4">
           <DataQualityScore 
-            qualityScore={validationMetrics?.average_quality_score || 0}
-            qualityTrends={validationMetrics?.quality_trends || []}
+            score={validationMetrics?.average_quality_score || 0}
           />
         </TabsContent>
 
@@ -156,9 +181,9 @@ export const EmissionsValidation: React.FC<EmissionsValidationProps> = ({ compan
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {validationMetrics?.quality_trends?.length > 0 ? (
+              {(validationMetrics && typeof validationMetrics === 'object' && 'quality_trends' in validationMetrics && Array.isArray(validationMetrics.quality_trends) && validationMetrics.quality_trends.length > 0) ? (
                 <div className="space-y-4">
-                  {validationMetrics.quality_trends.map((trend, index) => (
+                  {(validationMetrics as { quality_trends: Array<{ date: string; validation_count: number; average_score: number }> }).quality_trends.map((trend, index) => (
                     <div key={index} className="flex items-center justify-between p-3 border rounded">
                       <div>
                         <div className="font-medium">{trend.date}</div>

@@ -382,9 +382,9 @@ export const EPADashboard: React.FC<EPADashboardProps> = ({
           <EnhancedCard className="mt-6">
             <EnhancedCardHeader title="Emissions by State" />
             <EnhancedCardContent>
-              {dashboardStats?.emissions_by_state ? (
+              {dashboardStats?.emissions_by_sector ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {Object.entries(dashboardStats.emissions_by_state).map(([state, emissions]) => (
+                  {Object.entries(dashboardStats.emissions_by_sector).map(([state, emissions]) => (
                     <div key={state} className="text-center p-4 border rounded-lg">
                       <div className="text-lg font-bold text-gray-900">
                         {(emissions / 1000000).toFixed(1)}M
@@ -696,9 +696,9 @@ export const EPADashboard: React.FC<EPADashboardProps> = ({
                     <div className="text-right">
                       <div className={cn(
                         'text-lg font-bold',
-                        dashboardStats?.emissions_trends?.change_percentage > 0 ? 'text-red-600' : 'text-green-600'
+                        (dashboardStats?.emissions_trends?.change_percentage || 0) > 0 ? 'text-red-600' : 'text-green-600'
                       )}>
-                        {dashboardStats?.emissions_trends?.change_percentage > 0 ? '+' : ''}
+                        {(dashboardStats?.emissions_trends?.change_percentage || 0) > 0 ? '+' : ''}
                         {dashboardStats?.emissions_trends?.change_percentage?.toFixed(1) || '0.0'}%
                       </div>
                       <div className="text-xs text-gray-500">

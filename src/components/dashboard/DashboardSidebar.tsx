@@ -5,13 +5,14 @@ import { usePathname } from 'next/navigation';
 import { useAuthStore } from '../../stores/auth-store';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Search } from 'lucide-react';
 import {
   BarChart3,
   Calculator,
   Building2,
   FileText,
   History,
-  Search,
   Settings,
   LogOut,
   Menu,

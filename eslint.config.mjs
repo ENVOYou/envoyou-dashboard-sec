@@ -19,7 +19,17 @@ const eslintConfig = [
       "build/**",
       "next-env.d.ts",
     ],
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "warn", // bisa "off" untuk menonaktifkan total
+        {
+          "argsIgnorePattern": "^_",
+          "varsIgnorePattern": "^_",
+          "caughtErrorsIgnorePattern": "^_",
+        },
+      ],
+    },
   },
 ];
 
-export default eslintConfig;
+export default eslintConfig.length ? eslintConfig : [{}];

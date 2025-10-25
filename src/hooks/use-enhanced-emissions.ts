@@ -5,14 +5,11 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
-import type {
-  Scope1CalculationRequest,
+import type { 
+  Scope1CalculationRequest, 
   Scope2CalculationRequest,
-  CalculationApprovalRequest,
-  ValidationMetrics,
-  CompanyEmissionsSummary,
-  EmissionFactorResponse
-} from '@/types/emissions';
+  ActivityDataInput 
+} from '@/lib/api-client';
 
 // Type definitions for hook parameters
 interface CalculationFilters {
@@ -35,6 +32,13 @@ interface ConsolidationParams {
   reporting_year: number;
   consolidation_method?: string;
   include_scope3?: boolean;
+}
+
+// Calculation approval request type
+interface CalculationApprovalRequest {
+  decision: 'approve' | 'reject';
+  comments?: string;
+  conditions?: string[];
 }
 
 // Query Keys
@@ -109,7 +113,7 @@ export const useCalculateScope1Emissions = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: Scope1CalculationRequest) => apiClient.calculateScope1Emissions(data),
+    mutationFn: (data: Scope1CalculationRequest) => apiClient.calculateScope1(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ENHANCED_EMISSIONS_QUERY_KEYS.calculations() });
     },
@@ -120,7 +124,7 @@ export const useCalculateScope2Emissions = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: Scope2CalculationRequest) => apiClient.calculateScope2Emissions(data),
+    mutationFn: (data: Scope2CalculationRequest) => apiClient.calculateScope2(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ENHANCED_EMISSIONS_QUERY_KEYS.calculations() });
     },

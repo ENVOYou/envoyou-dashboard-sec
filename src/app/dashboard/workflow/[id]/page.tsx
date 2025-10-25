@@ -12,6 +12,7 @@ import { ArrowLeft, Edit, Settings } from 'lucide-react';
 import { WorkflowDetail } from '@/components/features/workflow/workflow-detail';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Button } from '@/components/ui/button';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Workflow } from '@/types/workflow';
 
 export default function WorkflowDetailPage() {

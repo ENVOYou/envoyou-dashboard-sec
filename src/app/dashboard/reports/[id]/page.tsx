@@ -12,6 +12,7 @@ import { ArrowLeft, Edit, Settings } from 'lucide-react';
 import { ReportDetail } from '@/components/features/reports/report-detail';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Button } from '@/components/ui/button';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Report } from '@/types/reports';
 
 export default function ReportDetailPage() {

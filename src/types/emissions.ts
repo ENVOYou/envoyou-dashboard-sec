@@ -5,6 +5,7 @@
 
 // Backend API Response Types (matching existing schema)
 export interface Scope1CalculationRequest {
+  calculation_name: string; // Required field from backend schema
   company_id: string;
   entity_id?: string;
   reporting_period: {
@@ -19,6 +20,7 @@ export interface Scope1CalculationRequest {
 }
 
 export interface Scope2CalculationRequest {
+  calculation_name: string; // Required field from backend schema
   company_id: string;
   entity_id?: string;
   reporting_period: {

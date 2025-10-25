@@ -135,7 +135,7 @@ export const useComplianceReport = (reportType: string, companyId?: string, date
   return useQuery({
     queryKey: [...AUDIT_QUERY_KEYS.compliance(), reportType, companyId, dateRange],
     queryFn: () => apiClient.generateComplianceReport({
-      report_type: reportType as 'sox' | 'gdpr' | 'hipaa' | 'pci_dss' | 'iso27001' | 'custom',
+      report_type: reportType as 'sox' | 'gdpr' | 'hipaa' | 'iso27001' | 'custom',
       company_id: companyId,
       date_range: dateRange!,
       format: 'pdf', // Default format

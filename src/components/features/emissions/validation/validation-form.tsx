@@ -64,7 +64,7 @@ export function ValidationForm({ onValidationComplete }: ValidationFormProps) {
         return {
           ...prev,
           [keys[0]]: {
-            ...prev[keys[0] as keyof EmissionFormData],
+            ...(prev[keys[0] as keyof EmissionFormData] as Record<string, unknown> || {}),
             [keys[1]]: value
           }
         };
@@ -81,24 +81,62 @@ export function ValidationForm({ onValidationComplete }: ValidationFormProps) {
     setValidationResult(null);
 
     try {
-      // Convert form data to validation format
-      const validationData = {
-        activityData: {
-          value: parseFloat(formData.activityData.value) || 0,
-          unit: formData.activityData.unit
-        },
-        reportingPeriod: {
-          startDate: formData.reportingPeriod.startDate,
-          endDate: formData.reportingPeriod.endDate
-        },
-        scope: formData.scope,
-        fuelType: formData.fuelType,
-        description: formData.description,
-        methodology: formData.methodology,
-        dataSource: formData.dataSource,
-        uncertainty: parseFloat(formData.uncertainty) || undefined,
-        comments: formData.comments
-      };
+      // Convert form data to proper Scope1/Scope2 format
+      const reportingYear = new Date(formData.reportingPeriod.startDate).getFullYear();
+      
+      let validationData;
+      
+      if (formData.scope === 'scope_1') {
+        // Format as Scope1CalculationRequest
+        validationData = {
+          calculation_name: 'Form Validation', // Required field from schema
+          company_id: 'demo-company-id', // Required field
+          reporting_period: {
+            start_date: formData.reportingPeriod.startDate,
+            end_date: formData.reportingPeriod.endDate,
+            reporting_year: reportingYear
+          },
+          fuel_data: [{
+            fuel_type: formData.fuelType,
+            amount: parseFloat(formData.activityData.value) || 0,
+            unit: formData.activityData.unit,
+            source_description: formData.dataSource || formData.description
+          }],
+          calculation_metadata: {
+            calculation_name: 'Form Validation',
+            description: formData.description,
+            methodology_notes: formData.methodology,
+            data_sources: formData.dataSource ? [formData.dataSource] : [],
+            uncertainty_notes: formData.uncertainty ? `${formData.uncertainty}%` : undefined
+          }
+        };
+      } else if (formData.scope === 'scope_2') {
+        // Format as Scope2CalculationRequest
+        validationData = {
+          calculation_name: 'Form Validation', // Required field from schema
+          company_id: 'demo-company-id', // Required field
+          reporting_period: {
+            start_date: formData.reportingPeriod.startDate,
+            end_date: formData.reportingPeriod.endDate,
+            reporting_year: reportingYear
+          },
+          electricity_data: [{
+            amount: parseFloat(formData.activityData.value) || 0,
+            unit: formData.activityData.unit,
+            source_description: formData.dataSource || formData.description
+          }],
+          methodology: 'location_based' as 'location_based' | 'market_based', // Default methodology
+          calculation_metadata: {
+            calculation_name: 'Form Validation',
+            description: formData.description,
+            methodology_notes: formData.methodology,
+            data_sources: formData.dataSource ? [formData.dataSource] : [],
+            uncertainty_notes: formData.uncertainty ? `${formData.uncertainty}%` : undefined
+          }
+        };
+      } else {
+        throw new Error('Scope 3 validation not yet implemented');
+      }
 
       const result = await validationEngine.validateEmissionsData(validationData);
       setValidationResult(result);

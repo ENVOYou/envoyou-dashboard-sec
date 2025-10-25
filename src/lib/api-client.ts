@@ -134,34 +134,46 @@ import type {
   EPAError,
 } from "../types/epa-integration";
 
-// Request/Response types for API methods
-interface Scope1CalculationRequest {
-  calculation_name: string;
-  company_id: string;
-  reporting_period_start: string;
-  reporting_period_end: string;
-  activity_data: Array<{
-    activity_type: string;
-    fuel_type: string;
-    quantity: number;
-    unit: string;
-    data_quality: string;
-  }>;
+// Request/Response types for API methods (matching backend schema)
+export interface ActivityDataInput {
+  activity_type: string;
+  fuel_type?: string | null;
+  activity_description?: string | null;
+  quantity: number;
+  unit: string;
+  location?: string | null;
+  activity_period_start?: string | null;
+  activity_period_end?: string | null;
+  data_source?: string | null;
+  data_quality?: string | null;
+  measurement_method?: string | null;
+  notes?: string | null;
+  additional_data?: Record<string, unknown> | null;
 }
 
-interface Scope2CalculationRequest {
+export interface Scope1CalculationRequest {
   calculation_name: string;
   company_id: string;
+  entity_id?: string | null;
   reporting_period_start: string;
   reporting_period_end: string;
-  electricity_consumption: Array<{
-    activity_type: string;
-    quantity: number;
-    unit: string;
-    location: string;
-    data_quality: string;
-  }>;
+  activity_data: ActivityDataInput[];
+  calculation_parameters?: Record<string, unknown> | null;
+  source_documents?: string[] | null;
+  notes?: string | null;
+}
+
+export interface Scope2CalculationRequest {
+  calculation_name: string;
+  company_id: string;
+  entity_id?: string | null;
+  reporting_period_start: string;
+  reporting_period_end: string;
+  electricity_consumption: ActivityDataInput[];
   calculation_method: "location_based" | "market_based";
+  calculation_parameters?: Record<string, unknown> | null;
+  source_documents?: string[] | null;
+  notes?: string | null;
 }
 
 interface EntityRequest {
@@ -494,10 +506,7 @@ class APIClient {
     return this.request(`/emissions/calculations${query ? `?${query}` : ""}`);
   }
 
-  async getCompanyEmissionsSummary(companyId: string, year?: number) {
-    const params = year ? `?reporting_year=${year}` : "";
-    return this.request(`/emissions/companies/${companyId}/summary${params}`);
-  }
+
 
   async getEmissionsCalculation(calculationId: string) {
     return this.request(`/emissions/calculations/${calculationId}`);

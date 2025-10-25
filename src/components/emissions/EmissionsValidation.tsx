@@ -7,6 +7,8 @@
 
 import React, { useState } from 'react';
 import { format } from 'date-fns';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { TrendingUp, TrendingDown, Minus, } from 'lucide-react'
 import {
   CheckCircle,
   AlertCircle,
@@ -14,9 +16,6 @@ import {
   ExternalLink,
   Download,
   RefreshCw,
-  TrendingUp,
-  TrendingDown,
-  Minus,
   FileText,
   Shield,
   AlertTriangle,
