@@ -13,7 +13,8 @@ test('should return null when user is not authenticated', () => {
   mockUseAuthStore.mockReturnValue({
     user: null,
     isLoading: false,
-    isAuthenticated: false
+    isAuthenticated: false,
+    isInitialized: true
   });
 
   const { container } = render(
@@ -29,7 +30,8 @@ test('should render children when user has required role', () => {
   mockUseAuthStore.mockReturnValue({
     user: { id: '1', role: 'admin' },
     isLoading: false,
-    isAuthenticated: true
+    isAuthenticated: true,
+    isInitialized: true
   });
 
   render(
@@ -45,7 +47,8 @@ test('should not render children when user lacks required role', () => {
   mockUseAuthStore.mockReturnValue({
     user: { id: '1', role: 'user' },
     isLoading: false,
-    isAuthenticated: true
+    isAuthenticated: true,
+    isInitialized: true
   });
 
   render(
@@ -68,7 +71,8 @@ test('should render custom fallback when provided', () => {
   mockUseAuthStore.mockReturnValue({
     user: { id: '1', role: 'user' },
     isLoading: false,
-    isAuthenticated: true
+    isAuthenticated: true,
+    isInitialized: true
   });
 
   render(
@@ -85,7 +89,8 @@ test('should handle multiple allowed roles correctly', () => {
   mockUseAuthStore.mockReturnValue({
     user: { id: '1', role: 'auditor' },
     isLoading: false,
-    isAuthenticated: true
+    isAuthenticated: true,
+    isInitialized: true
   });
 
   render(
