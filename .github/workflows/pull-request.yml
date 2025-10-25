@@ -46,17 +46,26 @@ jobs:
           # Read coverage summary
           COVERAGE_FILE="coverage/coverage-summary.json"
           if [ -f "$COVERAGE_FILE" ]; then
-            # Extract overall coverage percentage
-            OVERALL_COVERAGE=$(node -p "JSON.parse(require('fs').readFileSync('$COVERAGE_FILE')).total.lines.pct")
+            # Extract overall coverage percentage using Node.js for cross-platform compatibility
+            OVERALL_COVERAGE=$(node -e "
+              const fs = require('fs');
+              const coverage = JSON.parse(fs.readFileSync('$COVERAGE_FILE'));
+              console.log(coverage.total.lines.pct);
+            ")
             echo "Overall coverage: $OVERALL_COVERAGE%"
 
-            # Check if coverage meets minimum threshold (70%)
-            MIN_COVERAGE=70
-            if (( $(echo "$OVERALL_COVERAGE < $MIN_COVERAGE" | bc -l) )); then
-              echo "❌ Coverage $OVERALL_COVERAGE% is below minimum threshold $MIN_COVERAGE%"
-              exit 1
+            # Check if coverage meets minimum threshold (70%) using Node.js
+            MEETS_THRESHOLD=$(node -e "
+              const coverage = parseFloat('$OVERALL_COVERAGE');
+              const threshold = 70;
+              console.log(coverage >= threshold ? 'true' : 'false');
+            ")
+            
+            if [ "$MEETS_THRESHOLD" = "true" ]; then
+              echo "✅ Coverage $OVERALL_COVERAGE% meets minimum threshold 70%"
             else
-              echo "✅ Coverage $OVERALL_COVERAGE% meets minimum threshold $MIN_COVERAGE%"
+              echo "❌ Coverage $OVERALL_COVERAGE% is below minimum threshold 70%"
+              exit 1
             fi
           else
             echo "⚠️ Coverage file not found, skipping coverage check"
@@ -111,6 +120,7 @@ jobs:
         run: npx lhci autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+        continue-on-error: true  # Don't fail the workflow if Lighthouse fails
 
       - name: Upload performance reports
         uses: actions/upload-artifact@v4

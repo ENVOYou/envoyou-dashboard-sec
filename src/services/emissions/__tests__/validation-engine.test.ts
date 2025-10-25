@@ -25,6 +25,7 @@ describe('ValidationEngine', () => {
     describe('✅ Valid Data Tests', () => {
       it('should return valid result for perfect Scope 1 data', async () => {
         const perfectScope1Data: Scope1CalculationRequest = {
+          calculation_name: 'Test Scope 1 Calculation',
           company_id: 'company-123',
           reporting_period: {
             start_date: '2024-01-01',
@@ -53,6 +54,7 @@ describe('ValidationEngine', () => {
 
       it('should return valid result for perfect Scope 2 data', async () => {
         const perfectScope2Data: Scope2CalculationRequest = {
+          calculation_name: 'Test Scope 2 Calculation',
           company_id: 'company-123',
           reporting_period: {
             start_date: '2024-01-01',
@@ -84,6 +86,7 @@ describe('ValidationEngine', () => {
     describe('❌ Invalid Data Tests - Required Fields', () => {
       it('should return invalid result when company_id is missing', async () => {
         const invalidData = {
+          calculation_name: 'Test Missing Company ID',
           // company_id missing
           reporting_period: {
             start_date: '2024-01-01',
@@ -114,6 +117,7 @@ describe('ValidationEngine', () => {
 
       it('should return invalid result when fuel amount is missing', async () => {
         const invalidData = {
+          calculation_name: 'Test Invalid Fuel Amount',
           company_id: 'company-123',
           reporting_period: {
             start_date: '2024-01-01',
@@ -144,6 +148,7 @@ describe('ValidationEngine', () => {
 
       it('should return invalid result when electricity data is empty', async () => {
         const invalidData = {
+          calculation_name: 'Test Empty Electricity Data',
           company_id: 'company-123',
           reporting_period: {
             start_date: '2024-01-01',
@@ -170,6 +175,7 @@ describe('ValidationEngine', () => {
     describe('❌ Invalid Data Tests - Range Validation', () => {
       it('should return invalid result for negative fuel amount', async () => {
         const invalidData = {
+          calculation_name: 'Test Negative Fuel Amount',
           company_id: 'company-123',
           reporting_period: {
             start_date: '2024-01-01',
@@ -200,6 +206,7 @@ describe('ValidationEngine', () => {
 
       it('should return invalid result for invalid renewable percentage', async () => {
         const invalidData = {
+          calculation_name: 'Test Invalid Renewable Percentage',
           company_id: 'company-123',
           reporting_period: {
             start_date: '2024-01-01',
@@ -230,6 +237,7 @@ describe('ValidationEngine', () => {
 
       it('should return invalid result for invalid date range', async () => {
         const invalidData = {
+          calculation_name: 'Test Invalid Date Range',
           company_id: 'company-123',
           reporting_period: {
             start_date: '2024-12-31', // start after end
@@ -311,6 +319,7 @@ describe('ValidationEngine', () => {
     describe('✅ Perfect Score Tests', () => {
       it('should return high score (95-100) for perfect data', () => {
         const perfectData: Scope1CalculationRequest = {
+          calculation_name: 'Test Perfect Data',
           company_id: 'company-123',
           reporting_period: {
             start_date: '2024-01-01',
@@ -357,6 +366,7 @@ describe('ValidationEngine', () => {
         };
 
         const completeData = {
+          calculation_name: 'Test Complete Data',
           company_id: 'company-123',
           reporting_period: {
             start_date: '2024-01-01',
@@ -393,6 +403,7 @@ describe('ValidationEngine', () => {
     describe('📊 Score Components Tests', () => {
       it('should penalize negative values in accuracy score', () => {
         const dataWithNegatives = {
+          calculation_name: 'Test Data With Negatives',
           company_id: 'company-123',
           reporting_period: {
             start_date: '2024-01-01',
@@ -409,6 +420,7 @@ describe('ValidationEngine', () => {
         };
 
         const perfectData = {
+          calculation_name: 'Test Perfect Data 2',
           company_id: 'company-123',
           reporting_period: {
             start_date: '2024-01-01',
@@ -432,6 +444,7 @@ describe('ValidationEngine', () => {
 
       it('should penalize inconsistent date ranges', () => {
         const inconsistentData = {
+          calculation_name: 'Test Inconsistent Data',
           company_id: 'company-123',
           reporting_period: {
             start_date: '2023-01-01', // 2023 dates
@@ -448,6 +461,7 @@ describe('ValidationEngine', () => {
         };
 
         const consistentData = {
+          calculation_name: 'Test Consistent Data',
           company_id: 'company-123',
           reporting_period: {
             start_date: '2024-01-01', // consistent 2024 dates
@@ -475,6 +489,7 @@ describe('ValidationEngine', () => {
     it('should validate multiple data items', async () => {
       const bulkData = [
         {
+          calculation_name: 'Test Bulk Data 1',
           company_id: 'company-123',
           reporting_period: {
             start_date: '2024-01-01',

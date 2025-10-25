@@ -165,6 +165,8 @@ export interface ReportsFilters {
   date_to?: string;
   sort_by?: 'created_at' | 'updated_at' | 'title' | 'status' | 'priority';
   sort_order?: 'asc' | 'desc';
+  limit?: number;
+  offset?: number;
 }
 
 // Report Creation/Update

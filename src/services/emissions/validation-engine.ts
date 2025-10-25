@@ -21,7 +21,7 @@ export class ValidationEngine implements ValidationEngineInterface {
   /**
    * Validate emissions data against predefined business rules and regulatory requirements
    */
-  async validateEmissionsData(data: Scope1CalculationRequest | Scope2CalculationRequest): Promise<ValidationResult> {
+  async validateEmissionsData(data: Partial<Scope1CalculationRequest> | Partial<Scope2CalculationRequest> | any): Promise<ValidationResult> {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
     const recommendations: string[] = [];
@@ -92,7 +92,7 @@ export class ValidationEngine implements ValidationEngineInterface {
   /**
    * Validate bulk emissions data
    */
-  async validateBulkData(data: (Scope1CalculationRequest | Scope2CalculationRequest)[]): Promise<ValidationResult[]> {
+  async validateBulkData(data: (Partial<Scope1CalculationRequest> | Partial<Scope2CalculationRequest> | any)[]): Promise<ValidationResult[]> {
     const results: ValidationResult[] = [];
 
     for (const item of data) {
@@ -131,7 +131,7 @@ export class ValidationEngine implements ValidationEngineInterface {
   /**
    * Calculate data quality score (0-100)
    */
-  calculateDataQualityScore(data: Scope1CalculationRequest | Scope2CalculationRequest): number {
+  calculateDataQualityScore(data: Partial<Scope1CalculationRequest> | Partial<Scope2CalculationRequest> | any): number {
     if (!data) return 0;
 
     let score = 0;
