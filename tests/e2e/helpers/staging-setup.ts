@@ -1,6 +1,6 @@
 /**
  * Global setup for staging E2E tests
- * Configures authentication and environment for real staging tests
+ * Handles authentication and environment preparation
  */
 
 import { chromium, FullConfig } from '@playwright/test';
@@ -8,41 +8,35 @@ import { chromium, FullConfig } from '@playwright/test';
 async function globalSetup(config: FullConfig) {
   console.log('🚀 Setting up staging E2E tests...');
   
-  // Create a browser instance for setup
+  // Check if staging environment is accessible
   const browser = await chromium.launch();
-  const context = await browser.newContext();
-  const page = await context.newPage();
-
+  const page = await browser.newPage();
+  
   try {
-    // Test if staging environment is accessible
-    console.log('🔍 Checking staging environment accessibility...');
-    await page.goto('https://staging.envoyou.com', { waitUntil: 'networkidle' });
-    
-    // Check if login page is accessible
-    await page.goto('https://staging.envoyou.com/login', { waitUntil: 'networkidle' });
-    console.log('✅ Staging environment is accessible');
-
-    // Test API connectivity
-    console.log('🔍 Testing API connectivity...');
-    const response = await page.request.get('https://staging-api.envoyou.com/v1/health', {
-      ignoreHTTPSErrors: true,
+    // Test basic connectivity to staging
+    await page.goto('https://staging.envoyou.com', { 
+      waitUntil: 'networkidle',
+      timeout: 30000 
     });
     
+    console.log('✅ Staging environment is accessible');
+    
+    // Check if we can reach the API
+    const response = await page.request.get('/api/health');
     if (response.ok()) {
-      console.log('✅ Staging API is accessible');
+      console.log('✅ Staging API is responding');
     } else {
-      console.log('⚠️ Staging API may not be fully ready, tests will use fallback');
+      console.warn('⚠️ Staging API health check failed, tests may be limited');
     }
-
+    
   } catch (error) {
-    console.log('⚠️ Staging environment setup warning:', error);
-    console.log('Tests will continue with available functionality');
+    console.error('❌ Failed to connect to staging environment:', error);
+    throw new Error('Staging environment not accessible');
   } finally {
-    await context.close();
     await browser.close();
   }
-
-  console.log('✅ Staging E2E setup completed');
+  
+  console.log('✅ Staging setup complete');
 }
 
 export default globalSetup;
