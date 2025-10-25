@@ -10,15 +10,25 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     ignores: [
       "node_modules/**",
       ".next/**",
       "out/**",
       "build/**",
+      "dist/**",
+      "coverage/**",
+      "playwright-report/**",
+      "lhci-reports/**",
       "next-env.d.ts",
+      "**/*.min.js",
+      "**/*.bundle.js",
+      "**/*.d.ts",
+      "**/chunks/**",
     ],
+  },
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  {
     rules: {
       "@typescript-eslint/no-unused-vars": [
         "warn", // bisa "off" untuk menonaktifkan total

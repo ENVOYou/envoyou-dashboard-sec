@@ -202,7 +202,7 @@ describe('Enhanced Emissions Hooks', () => {
       });
 
       it('should pass filters to API when provided', async () => {
-        const mockCalculations: any[] = [];
+        const mockCalculations: unknown[] = [];
         (apiClient.getCalculations as jest.Mock).mockResolvedValue(mockCalculations);
 
         const filters = {
@@ -351,7 +351,7 @@ describe('Enhanced Emissions Hooks', () => {
     });
 
     it('should use appropriate stale time for calculations (2 minutes)', async () => {
-      const mockCalculations: any[] = [];
+      const mockCalculations: unknown[] = [];
       (apiClient.getCalculations as jest.Mock).mockResolvedValue(mockCalculations);
 
       const wrapper = createWrapper();

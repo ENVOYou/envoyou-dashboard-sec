@@ -26,10 +26,10 @@ import type {
 
 // Validation Engine Interface
 export interface ValidationEngineInterface {
-  validateEmissionsData(data: Partial<Scope1CalculationRequest> | Partial<Scope2CalculationRequest> | any): Promise<ValidationResult>;
-  validateBulkData(data: (Partial<Scope1CalculationRequest> | Partial<Scope2CalculationRequest> | any)[]): Promise<ValidationResult[]>;
+  validateEmissionsData(data: Partial<Scope1CalculationRequest> | Partial<Scope2CalculationRequest> | unknown): Promise<ValidationResult>;
+  validateBulkData(data: (Partial<Scope1CalculationRequest> | Partial<Scope2CalculationRequest> | unknown)[]): Promise<ValidationResult[]>;
   getValidationMetrics(startDate?: Date, endDate?: Date): Promise<ValidationMetrics>;
-  calculateDataQualityScore(data: Partial<Scope1CalculationRequest> | Partial<Scope2CalculationRequest> | any): number;
+  calculateDataQualityScore(data: Partial<Scope1CalculationRequest> | Partial<Scope2CalculationRequest> | unknown): number;
 }
 
 // Calculation Engine Interface

@@ -9,7 +9,6 @@ import type {
   ValidationError,
   ValidationWarning,
   ValidationMetrics,
-  EmissionsData,
   Scope1CalculationRequest,
   Scope2CalculationRequest,
   FuelData,
@@ -21,7 +20,7 @@ export class ValidationEngine implements ValidationEngineInterface {
   /**
    * Validate emissions data against predefined business rules and regulatory requirements
    */
-  async validateEmissionsData(data: Partial<Scope1CalculationRequest> | Partial<Scope2CalculationRequest> | any): Promise<ValidationResult> {
+  async validateEmissionsData(data: Partial<Scope1CalculationRequest> | Partial<Scope2CalculationRequest> | unknown): Promise<ValidationResult> {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
     const recommendations: string[] = [];
@@ -92,7 +91,7 @@ export class ValidationEngine implements ValidationEngineInterface {
   /**
    * Validate bulk emissions data
    */
-  async validateBulkData(data: (Partial<Scope1CalculationRequest> | Partial<Scope2CalculationRequest> | any)[]): Promise<ValidationResult[]> {
+  async validateBulkData(data: (Partial<Scope1CalculationRequest> | Partial<Scope2CalculationRequest> | unknown)[]): Promise<ValidationResult[]> {
     const results: ValidationResult[] = [];
 
     for (const item of data) {
@@ -116,7 +115,7 @@ export class ValidationEngine implements ValidationEngineInterface {
       if (endDate) params.end_date = endDate.toISOString();
 
       return await apiClient.getValidationMetrics(params);
-    } catch (error) {
+    } catch (_error) {
       // Return default metrics if API call fails
       return {
         total_validations: 0,
@@ -131,7 +130,7 @@ export class ValidationEngine implements ValidationEngineInterface {
   /**
    * Calculate data quality score (0-100)
    */
-  calculateDataQualityScore(data: Partial<Scope1CalculationRequest> | Partial<Scope2CalculationRequest> | any): number {
+  calculateDataQualityScore(data: Partial<Scope1CalculationRequest> | Partial<Scope2CalculationRequest> | unknown): number {
     if (!data) return 0;
 
     let score = 0;
@@ -509,7 +508,7 @@ export class ValidationEngine implements ValidationEngineInterface {
     process: { process_type?: string; amount?: number; unit?: string },
     index: number,
     errors: ValidationError[],
-    warnings: ValidationWarning[]
+    _warnings: ValidationWarning[]
   ): void {
     const fieldPrefix = `process_data[${index}]`;
 
@@ -536,7 +535,7 @@ export class ValidationEngine implements ValidationEngineInterface {
     fugitive: { source_type?: string; amount?: number; unit?: string },
     index: number,
     errors: ValidationError[],
-    warnings: ValidationWarning[]
+    _warnings: ValidationWarning[]
   ): void {
     const fieldPrefix = `fugitive_data[${index}]`;
 
@@ -559,7 +558,7 @@ export class ValidationEngine implements ValidationEngineInterface {
     }
   }
 
-  private calculateCompletenessScore(data: Scope1CalculationRequest | Scope2CalculationRequest): number {
+  private calculateCompletenessScore(data: unknown): number {
     if (!data) return 0;
 
     let filledFields = 0;
@@ -569,7 +568,7 @@ export class ValidationEngine implements ValidationEngineInterface {
     const requiredFields = ["company_id", "reporting_period"] as const;
     requiredFields.forEach((field) => {
       totalFields++;
-      if ((data as any)[field]) filledFields++;
+      if (data && typeof data === 'object' && (data as Record<string, unknown>)[field]) filledFields++;
     });
 
     // Activity data completeness
@@ -594,7 +593,7 @@ export class ValidationEngine implements ValidationEngineInterface {
     return totalFields > 0 ? (filledFields / totalFields) * 100 : 0;
   }
 
-  private calculateAccuracyScore(data: Scope1CalculationRequest | Scope2CalculationRequest): number {
+  private calculateAccuracyScore(data: unknown): number {
     const score = 100;
     let deductions = 0;
 
@@ -622,7 +621,7 @@ export class ValidationEngine implements ValidationEngineInterface {
     return Math.max(0, score - deductions);
   }
 
-  private calculateConsistencyScore(data: Scope1CalculationRequest | Scope2CalculationRequest): number {
+  private calculateConsistencyScore(data: unknown): number {
     const score = 100;
     let deductions = 0;
 
@@ -643,8 +642,9 @@ export class ValidationEngine implements ValidationEngineInterface {
     }
 
     // Check date consistency
-    if (data.reporting_period) {
-      const { start_date, end_date, reporting_year } = data.reporting_period;
+    if (data && typeof data === 'object' && (data as Record<string, unknown>).reporting_period) {
+      const reportingPeriod = (data as Record<string, unknown>).reporting_period;
+      const { start_date, end_date, reporting_year } = reportingPeriod;
       if (start_date && end_date && reporting_year) {
         const startYear = new Date(start_date).getFullYear();
         const endYear = new Date(end_date).getFullYear();
@@ -657,7 +657,7 @@ export class ValidationEngine implements ValidationEngineInterface {
     return Math.max(0, score - deductions);
   }
 
-  private calculateTimelinessScore(data: Scope1CalculationRequest | Scope2CalculationRequest): number {
+  private calculateTimelinessScore(_data: unknown): number {
     // For now, return a fixed score since we don't have timestamp data
     // In real implementation, this would check how recent the data is
     return 90;
