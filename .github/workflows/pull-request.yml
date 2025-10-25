@@ -84,14 +84,11 @@ jobs:
       - name: Build application
         run: npm run build
 
-      - name: Ensure no other process uses port 3000
-        run: |
-            sudo lsof -t -i:3000 | xargs -r sudo kill -9 || true
-
-      - name: Run E2E tests
+      - name: Run E2E tests against staging
         run: npm run test:e2e
         env:
-            NEXT_PUBLIC_API_URL: "https://staging-api.envoyou.com"
+          PLAYWRIGHT_BASE_URL: "https://staging.envoyou.com"
+          NEXT_PUBLIC_API_URL: "https://staging-api.envoyou.com"
 
       - name: Upload E2E test results
         uses: actions/upload-artifact@v4
