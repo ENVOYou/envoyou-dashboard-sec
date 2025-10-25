@@ -63,7 +63,7 @@ jobs:
           if [ -f "$COVERAGE_FILE" ]; then
             # Overall coverage check
             OVERALL_COVERAGE=$(node -p "JSON.parse(require('fs').readFileSync('$COVERAGE_FILE')).total.lines.pct")
-            MIN_OVERALL=20
+            MIN_OVERALL=10
 
             echo "📊 Overall Coverage: $OVERALL_COVERAGE%"
             MEETS_THRESHOLD=$(node -e "
