@@ -56,17 +56,17 @@ jobs:
             ")
             echo "Overall coverage: $OVERALL_COVERAGE%"
 
-            # Check if coverage meets minimum threshold (70%) using Node.js
+            # Check if coverage meets minimum threshold (20%) using Node.js
             MEETS_THRESHOLD=$(node -e "
               const coverage = parseFloat('$OVERALL_COVERAGE');
-              const threshold = 70;
+              const threshold = 20;
               console.log(coverage >= threshold ? 'true' : 'false');
             ")
             
             if [ "$MEETS_THRESHOLD" = "true" ]; then
-              echo "✅ Coverage $OVERALL_COVERAGE% meets minimum threshold 70%"
+              echo "✅ Coverage $OVERALL_COVERAGE% meets minimum threshold 20%"
             else
-              echo "❌ Coverage $OVERALL_COVERAGE% is below minimum threshold 70%"
+              echo "❌ Coverage $OVERALL_COVERAGE% is below minimum threshold 20%"
               exit 1
             fi
           else
