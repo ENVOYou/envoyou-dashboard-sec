@@ -643,8 +643,11 @@ export class ValidationEngine implements ValidationEngineInterface {
 
     // Check date consistency
     if (data && typeof data === 'object' && (data as Record<string, unknown>).reporting_period) {
-      const reportingPeriod = (data as Record<string, unknown>).reporting_period;
-      const { start_date, end_date, reporting_year } = reportingPeriod;
+      const reportingPeriod = (data as Record<string, unknown>).reporting_period as Record<string, unknown>;
+      const start_date = reportingPeriod.start_date as string;
+      const end_date = reportingPeriod.end_date as string;
+      const reporting_year = reportingPeriod.reporting_year as number;
+      
       if (start_date && end_date && reporting_year) {
         const startYear = new Date(start_date).getFullYear();
         const endYear = new Date(end_date).getFullYear();
