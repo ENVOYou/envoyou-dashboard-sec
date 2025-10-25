@@ -21,12 +21,28 @@ async function globalSetup(config: FullConfig) {
     
     console.log('✅ Staging environment is accessible');
     
-    // Check if we can reach the API
-    const response = await page.request.get('/api/health');
-    if (response.ok()) {
-      console.log('✅ Staging API is responding');
-    } else {
-      console.warn('⚠️ Staging API health check failed, tests may be limited');
+    // Check if we can reach the backend API
+    try {
+      const response = await page.request.get('https://staging-api.envoyou.com/health');
+      if (response.ok()) {
+        console.log('✅ Staging API is responding');
+        
+        // Test specific validation endpoints
+        const validationTest = await page.request.get('https://staging-api.envoyou.com/v1/validation/test');
+        if (validationTest.ok()) {
+          console.log('✅ Validation endpoints are accessible');
+        }
+        
+        // Test EPA endpoints
+        const epaTest = await page.request.get('https://staging-api.envoyou.com/v1/epa/summary');
+        if (epaTest.ok()) {
+          console.log('✅ EPA endpoints are accessible');
+        }
+      } else {
+        console.warn('⚠️ Staging API health check failed, tests may be limited');
+      }
+    } catch (apiError) {
+      console.warn('⚠️ API health check failed, tests may be limited:', apiError);
     }
     
   } catch (error) {
