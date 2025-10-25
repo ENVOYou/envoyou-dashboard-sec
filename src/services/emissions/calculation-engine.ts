@@ -10,9 +10,9 @@ import type {
   ActivityDataInput
 } from '@/lib/api-client';
 import type {
-  EmissionsCalculationResponse,
+  EmissionCalculation,
   CalculationSummary
-} from '@/types/emissions';
+} from '@/types/api';
 
 export interface CalculationFilters {
   company_id?: string;
@@ -32,7 +32,7 @@ export class CalculationEngine {
   /**
    * Calculate Scope 1 emissions using backend endpoint
    */
-  async calculateScope1(request: Scope1CalculationRequest): Promise<EmissionsCalculationResponse> {
+  async calculateScope1(request: Scope1CalculationRequest): Promise<EmissionCalculation> {
     try {
       // Validate request before sending
       this.validateScope1Request(request);
@@ -52,7 +52,7 @@ export class CalculationEngine {
   /**
    * Calculate Scope 2 emissions using backend endpoint
    */
-  async calculateScope2(request: Scope2CalculationRequest): Promise<EmissionsCalculationResponse> {
+  async calculateScope2(request: Scope2CalculationRequest): Promise<EmissionCalculation> {
     try {
       // Validate request before sending
       this.validateScope2Request(request);
@@ -87,7 +87,7 @@ export class CalculationEngine {
   /**
    * Get detailed calculation by ID
    */
-  async getCalculation(calculationId: string): Promise<EmissionsCalculationResponse> {
+  async getCalculation(calculationId: string): Promise<EmissionCalculation> {
     try {
       const calculation = await apiClient.getCalculation(calculationId);
       return calculation;

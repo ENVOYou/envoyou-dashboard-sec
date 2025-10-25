@@ -3,6 +3,25 @@
  * TypeScript interfaces for enhanced emissions functionality
  */
 
+// Generic emissions data type for validation
+export interface EmissionsData {
+  calculation_name?: string;
+  company_id?: string;
+  entity_id?: string;
+  reporting_period?: {
+    start_date: string;
+    end_date: string;
+    reporting_year: number;
+  };
+  fuel_data?: FuelData[];
+  electricity_data?: ElectricityData[];
+  process_data?: ProcessData[];
+  fugitive_data?: FugitiveData[];
+  methodology?: 'location_based' | 'market_based';
+  renewable_percentage?: number;
+  calculation_metadata?: CalculationMetadata;
+}
+
 // Backend API Response Types (matching existing schema)
 export interface Scope1CalculationRequest {
   calculation_name: string; // Required field from backend schema

@@ -163,11 +163,11 @@ export class ValidationEngine implements ValidationEngineInterface {
   // Private helper methods
 
   private isScope1Data(data: unknown): data is Scope1CalculationRequest {
-    return data && typeof data === 'object' && 'fuel_data' in data && Array.isArray((data as Record<string, unknown>).fuel_data);
+    return !!(data && typeof data === 'object' && 'fuel_data' in data && Array.isArray((data as Record<string, unknown>).fuel_data));
   }
 
   private isScope2Data(data: unknown): data is Scope2CalculationRequest {
-    return (
+    return !!(
       data && typeof data === 'object' && 'electricity_data' in data && Array.isArray((data as Record<string, unknown>).electricity_data)
     );
   }
@@ -566,10 +566,10 @@ export class ValidationEngine implements ValidationEngineInterface {
     let totalFields = 0;
 
     // Required fields
-    const requiredFields = ["company_id", "reporting_period"];
+    const requiredFields = ["company_id", "reporting_period"] as const;
     requiredFields.forEach((field) => {
       totalFields++;
-      if (data[field]) filledFields++;
+      if ((data as any)[field]) filledFields++;
     });
 
     // Activity data completeness

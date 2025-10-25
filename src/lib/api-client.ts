@@ -1906,11 +1906,18 @@ class APIClient {
   }
 
   // Company emissions summary endpoints
-  async getCompanyEmissionsSummary(companyId: string, params?: {
-    reporting_year?: number;
-  }): Promise<CompanyEmissionsSummary> {
+  async getCompanyEmissionsSummary(
+    companyId: string, 
+    paramsOrYear?: { reporting_year?: number } | number
+  ): Promise<CompanyEmissionsSummary> {
     const searchParams = new URLSearchParams();
-    if (params?.reporting_year) searchParams.append('reporting_year', params.reporting_year.toString());
+    
+    // Handle both old (number) and new (object) parameter formats
+    if (typeof paramsOrYear === 'number') {
+      searchParams.append('reporting_year', paramsOrYear.toString());
+    } else if (paramsOrYear?.reporting_year) {
+      searchParams.append('reporting_year', paramsOrYear.reporting_year.toString());
+    }
     
     const query = searchParams.toString();
     return this.request<CompanyEmissionsSummary>(`/emissions/companies/${companyId}/summary${query ? `?${query}` : ''}`);
