@@ -69,11 +69,17 @@ export function DashboardHeader() {
               Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator className="h-px bg-gray-200 dark:bg-gray-700" />
-            <DropdownMenuItem
-              className="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-red-600 dark:text-red-400"
-              onClick={() => logout()}
-            >
-              Sign out
+            <DropdownMenuItem asChild>
+              <button
+                className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-red-600 dark:text-red-400"
+                onClick={() => {
+                  console.log('DashboardHeader - Logout clicked');
+                  logout();
+                }}
+                aria-label="Logout"
+              >
+                Sign out
+              </button>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

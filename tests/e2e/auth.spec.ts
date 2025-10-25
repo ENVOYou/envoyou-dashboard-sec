@@ -24,8 +24,8 @@ test.describe('Authentication', () => {
     await page.goto('/login');
 
     // Fill login form
-    await page.fill('input[type="email"]', 'test@example.com');
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[type="email"]', 'admin@example.com');
+    await page.fill('input[type="password"]', 'AdminPass123!');
 
     // Mock successful login response
     await page.route('**/auth/login', async route => {
@@ -37,8 +37,8 @@ test.describe('Authentication', () => {
           token_type: 'bearer',
           user: {
             id: '1',
-            email: 'test@example.com',
-            full_name: 'Test User',
+            email: 'admin@example.com',
+            full_name: 'Admin User',
             role: 'admin'
           }
         })
@@ -70,8 +70,9 @@ test.describe('Authentication', () => {
 
     await page.click('button[type="submit"]');
 
-    // Should show error message
-    await expect(page.locator('text=Invalid credentials')).toBeVisible();
+    // Should show error message in the error div
+    await expect(page.locator('.bg-red-100')).toBeVisible();
+    await expect(page.locator('.bg-red-100')).toContainText('Invalid credentials');
   });
 
   test('should logout successfully', async ({ page }) => {
@@ -80,15 +81,22 @@ test.describe('Authentication', () => {
       window.localStorage.setItem('auth_token', 'mock-jwt-token');
       window.localStorage.setItem('user', JSON.stringify({
         id: '1',
-        email: 'test@example.com',
-        full_name: 'Test User',
+        email: 'admin@example.com',
+        full_name: 'Admin User',
         role: 'admin'
       }));
     });
 
     await page.goto('/dashboard');
 
-    // Click logout button
+    // Wait for dashboard to load
+    await expect(page.locator('text=Dashboard')).toBeVisible();
+
+    // Click on profile dropdown to open it
+    await page.click('button:has-text("Admin User")');
+
+    // Wait for dropdown to be visible and click logout button
+    await expect(page.locator('button[aria-label="Logout"]')).toBeVisible();
     await page.click('button[aria-label="Logout"]');
 
     // Should redirect to login

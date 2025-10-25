@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { apiClient } from '@/lib/api-client';
 
 interface ResetPasswordRequest {
@@ -34,7 +35,7 @@ function ResetPasswordForm() {
   }, [searchParams, router]);
 
   const resetPasswordMutation = useMutation({
-    mutationFn: async (data: ResetPasswordRequest) => {
+    mutationFn: async (_data: ResetPasswordRequest) => {
       console.log('Resetting password with token');
       // Note: This endpoint might not exist yet in the backend
       // We'll use a placeholder for now

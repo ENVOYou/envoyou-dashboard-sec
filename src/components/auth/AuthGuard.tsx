@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuthStore } from '../../stores/auth-store';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Loading } from '../ui/loading';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';

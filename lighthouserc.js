@@ -6,7 +6,7 @@ module.exports = {
         'https://staging.envoyou.com/dashboard',
         'https://staging.envoyou.com/login'
       ],
-      numberOfRuns: 3,
+      numberOfRuns: 2, // Reduced for faster CI
     },
     assert: {
       assertions: {

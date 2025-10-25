@@ -51,6 +51,13 @@ export const useAuthStore = create<AuthState>()(
 
       logout: () => {
         console.log('AuthStore - Logout called');
+        // Clear localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('refresh_token');
+          localStorage.removeItem('user');
+          console.log('AuthStore - localStorage cleared');
+        }
         set({
           user: null,
           token: null,

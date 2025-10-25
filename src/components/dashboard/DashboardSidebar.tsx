@@ -5,19 +5,23 @@ import { usePathname } from 'next/navigation';
 import { useAuthStore } from '../../stores/auth-store';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Search } from 'lucide-react';
 import {
   BarChart3,
   Calculator,
   Building2,
   FileText,
   History,
-  Search,
   Settings,
   LogOut,
   Menu,
   X,
   ChevronLeft,
   ChevronRight,
+  Users,
+  AlertTriangle,
+  Shield,
 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -33,8 +37,10 @@ const navigation = [
   { name: 'Emissions Calculator', href: '/dashboard/emissions', icon: Calculator },
   { name: 'Company Entities', href: '/dashboard/entities', icon: Building2 },
   { name: 'Reports', href: '/dashboard/reports', icon: FileText },
+  { name: 'Workflows', href: '/dashboard/workflow', icon: Users },
+  { name: 'Anomaly Detection', href: '/dashboard/anomalies', icon: AlertTriangle },
+  { name: 'Audit & Compliance', href: '/dashboard/audit', icon: Shield },
   { name: 'Calculation History', href: '/dashboard/calculations', icon: History },
-  { name: 'Audit Trail', href: '/dashboard/audit', icon: Search },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 

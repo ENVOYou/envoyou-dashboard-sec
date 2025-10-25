@@ -6,13 +6,18 @@ import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calculator, Zap, Fuel, BarChart3 } from 'lucide-react';
+import { Calculator, Zap, Fuel, BarChart3, CheckCircle, Database, Building2 } from 'lucide-react';
 import { Scope1Calculator } from '@/components/emissions/Scope1Calculator';
 import { Scope2Calculator } from '@/components/emissions/Scope2Calculator';
 import { CalculationHistory } from '@/components/emissions/CalculationHistory';
+import { EmissionsValidation } from '@/components/emissions/EmissionsValidation';
+import { EmissionsAnalytics } from '@/components/emissions/EmissionsAnalytics';
+import { EmissionsImportExport } from '@/components/emissions/EmissionsImportExport';
+import { Scope3Calculator } from '@/components/emissions/Scope3Calculator';
 
 export default function EmissionsPage() {
   const [activeTab, setActiveTab] = useState('scope1');
+  const [companyId] = useState('company-1'); // TODO: Get from auth context or props
 
   // Fetch EPA factors summary
   const { data: factorsSummary, isLoading: factorsLoading } = useQuery({
@@ -84,20 +89,36 @@ export default function EmissionsPage() {
         </CardContent>
       </Card>
 
-      {/* Calculator Tabs */}
+      {/* Enhanced Emissions Management Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="scope1" className="flex items-center">
             <Fuel className="h-4 w-4 mr-2" />
-            Scope 1 Calculator
+            Scope 1
           </TabsTrigger>
           <TabsTrigger value="scope2" className="flex items-center">
             <Zap className="h-4 w-4 mr-2" />
-            Scope 2 Calculator
+            Scope 2
+          </TabsTrigger>
+          <TabsTrigger value="scope3" className="flex items-center">
+            <Building2 className="h-4 w-4 mr-2" />
+            Scope 3
+          </TabsTrigger>
+          <TabsTrigger value="validation" className="flex items-center">
+            <CheckCircle className="h-4 w-4 mr-2" />
+            Validation
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center">
+            <BarChart3 className="h-4 w-4 mr-2" />
+            Analytics
           </TabsTrigger>
           <TabsTrigger value="history" className="flex items-center">
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Calculation History
+            <Calculator className="h-4 w-4 mr-2" />
+            History
+          </TabsTrigger>
+          <TabsTrigger value="import-export" className="flex items-center">
+            <Database className="h-4 w-4 mr-2" />
+            Data
           </TabsTrigger>
         </TabsList>
 
@@ -109,8 +130,24 @@ export default function EmissionsPage() {
           <Scope2Calculator />
         </TabsContent>
 
+        <TabsContent value="scope3" className="space-y-6">
+          <Scope3Calculator />
+        </TabsContent>
+
+        <TabsContent value="validation" className="space-y-6">
+          <EmissionsValidation companyId={companyId} />
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6">
+          <EmissionsAnalytics companyId={companyId} />
+        </TabsContent>
+
         <TabsContent value="history" className="space-y-6">
           <CalculationHistory />
+        </TabsContent>
+
+        <TabsContent value="import-export" className="space-y-6">
+          <EmissionsImportExport companyId={companyId} />
         </TabsContent>
       </Tabs>
     </div>

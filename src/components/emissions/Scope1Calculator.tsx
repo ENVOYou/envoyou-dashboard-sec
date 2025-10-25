@@ -85,7 +85,7 @@ export function Scope1Calculator() {
   });
 
   // Fetch available fuel factors
-  const { data: fuelFactors, isLoading: factorsLoading } = useQuery({
+  const { data: _fuelFactors, isLoading: _factorsLoading } = useQuery({
     queryKey: ['fuel-factors'],
     queryFn: () => apiClient.getEmissionsFactors({ category: 'fuel' }),
     enabled: false, // Disable this query since we're not using fuelFactors

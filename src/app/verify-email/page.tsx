@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 function VerifyEmailForm() {
-  const router = useRouter();
+  const _router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
@@ -41,7 +41,7 @@ function VerifyEmailForm() {
           setStatus("error");
           setMessage(errorData.detail || "Failed to verify email");
         }
-      } catch (error) {
+      } catch (_error) {
         setStatus("error");
         setMessage("Network error. Please try again.");
       }
